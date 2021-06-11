@@ -1,0 +1,5 @@
+import { html } from "tshtml";
+
+export default html`
+    <div>Hello world</div>
+`;

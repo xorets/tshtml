@@ -1,0 +1,27 @@
+{
+  "name": "tshtml-loader",
+  "version": "1.1.5",
+  "description": "",
+  "main": "lib/index.js",
+  "files": [
+    "lib/*.*"
+  ],
+  "scripts": {
+    "build": "tsc ./src/index.ts ./src/export-template.ts --outdir ./lib -d",
+    "build-watch": "tsc ./src/index.ts --outdir ./lib -d -w"
+  },
+  "author": "LOGEX Group",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/lodash": "^4.14.168",
+    "@types/node": "^14.14.27",
+    "@types/webpack": "^4.41.26"
+  },
+  "dependencies": {
+    "lodash": "^4.17.20",
+    "ts-node": "^9.1.1",
+    "tsconfig-paths": "^3.9.0",
+    "tshtml": "^1.1.5",
+    "typescript": "4.1.5"
+  }
+}
