@@ -7,14 +7,16 @@
   "scripts": {
     "build": "tsc -b tsconfig.json",
     "build-watch": "tsc -b tsconfig.json -w",
-    "test": "node ./test/jasmine"
+    "test": "node ./test/jasmine",
+    "build-docs": "typedoc ./src/index.ts --out ../docs/typedoc"
   },
   "author": "LOGEX Group",
   "license": "MIT",
   "devDependencies": {
     "@types/jasmine": "^3.7.6",
     "@types/lodash": "^4.14.170",
-    "jasmine": "^3.7.0"
+    "jasmine": "^3.7.0",
+    "typedoc": "^0.21.2"
   },
   "dependencies": {
     "htmlparser2": "^6.1.0",
