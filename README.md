@@ -102,6 +102,10 @@ builder configuration and specify the name of additional webpack config file:
             "replaceDuplicatePlugins": true
         },
         ...
+    },
+    "serve": {
+        "builder": "@angular-builders/custom-webpack:dev-server",
+        ...
 ```
 
 Add `extra-webpack.config.js`:

@@ -91,7 +91,6 @@ https://codeburst.io/customizing-angular-cli-6-build-an-alternative-to-ng-eject-
 
 For that you need to install necessary packages:
 ```
-npm install @angular-devkit/build-angular --save-dev
 npm install @angular-builders/custom-webpack --save-dev
 ```
 Add "architect" section to the "angular.json" if it is not already there. Change

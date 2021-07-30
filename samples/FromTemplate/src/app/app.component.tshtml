@@ -1,0 +1,5 @@
+import { html, tagToString } from "tshtml";
+
+export default html`
+  <div>Hello, <b>world</b>, from <i>tshtml template</i>!</div>
+`;
