@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "lodash": "^4.17.20",
-    "ts-node": "^9.1.1",
+    "ts-node": "^10.0.0",
     "tsconfig-paths": "^3.9.0",
     "tshtml": "^1.1.5",
     "typescript": "4.1.5"
