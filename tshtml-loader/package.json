@@ -1,11 +1,12 @@
 {
   "name": "tshtml-loader",
-  "version": "1.1.5",
+  "version": "1.1.7",
   "description": "",
   "main": "lib/index.js",
   "files": [
     "lib/*.*"
   ],
+  "bin": "./lib/export-template.js",
   "scripts": {
     "build": "tsc ./src/index.ts ./src/export-template.ts --outdir ./lib -d",
     "build-watch": "tsc ./src/index.ts --outdir ./lib -d -w"
@@ -14,14 +15,14 @@
   "license": "MIT",
   "devDependencies": {
     "@types/lodash": "4.14.178",
-    "@types/node": "14.18.10",
-    "@types/webpack": "4.41.32"
+    "@types/node": "16.11.7",
+    "@types/webpack": "4.41.26"
   },
   "dependencies": {
-    "lodash": "^4.17.20",
-    "ts-node": "^9.1.1",
-    "tsconfig-paths": "^3.9.0",
-    "tshtml": "^1.1.5",
-    "typescript": "4.1.5"
+    "lodash": "^4.17.21",
+    "ts-node": "^10.5.0",
+    "tsconfig-paths": "^3.12.0",
+    "tshtml": "^1.1.6",
+    "typescript": "4.3.5"
   }
 }

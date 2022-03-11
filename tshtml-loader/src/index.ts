@@ -113,6 +113,7 @@ function compileCode( code: string, fileName: string ) {
         compilerService = register( {
             compilerOptions: {
                 module: "CommonJS",
+                target: "es2015",
             },
         } );
     }
@@ -144,7 +145,7 @@ function createRequireService( fileName: string ) {
     const req = Module.createRequire( fileName );
 
     const cache = req.cache;
-    const dependencies = [];
+    const dependencies: string[] = [];
 
     const resolveFn = ( id: string, options?: { paths?: string[]; } ) => {
         return req.resolve( id, options );
