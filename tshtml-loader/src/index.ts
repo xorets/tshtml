@@ -1,68 +1,76 @@
-import { filter, isString, Dictionary, keys, isArray } from "lodash";
-import { Service, register } from "ts-node";
+import { Dictionary, filter, isArray, isString, keys } from "lodash";
+import { register, Service } from "ts-node";
 import { statSync } from "fs";
 import { dirname } from "path";
 import { Script } from "vm";
-import LoaderContext = webpack.loader.LoaderContext;
 import * as webpack from "webpack";
 import { isTag, tagToString } from "tshtml";
 
-require( "tsconfig-paths/register" ); // Necessary to support @folders resolution by Nodejs
-const Module = require( "module" );
+require("tsconfig-paths/register"); // Necessary to support @folders resolution by Nodejs
+const Module = require("module");
 
 // ----------------------------------------------------------------------------------
-//
-export default function( this: LoaderContext, source: string ) {
-
+// tshtml-loader implementation
+export default function (this: webpack.LoaderContext<any>, source: string) {
     let result: { exports: any; dependencies: string[] };
     let htmlResult: string;
     let builder: any;
     try {
-        result = executeTemplate( source, this.resourcePath );
+        result = executeTemplate(source, this.resourcePath);
         builder = result.exports.default;
-    } catch ( error ) {
-        throw new Error( `Error executing template: ${error.message}\n ${error.stack}` );
+    } catch (error) {
+        throw new Error(`Error executing template: ${error.message}\n ${error.stack}`);
     }
 
-    if ( builder == null ) {
-        throw new Error( `Template must be exported as "default".` );
+    if (builder == null) {
+        throw new Error(`Template must be exported as "default".`);
     }
 
-    htmlResult = templateToString( builder );
+    htmlResult = templateToString(builder);
 
     // Dependencies
-    const reTestNodeFolder = /[\/\\]node_modules[\/\\]/g;
-    const filteredDependencies = filter( result.dependencies, x => x.startsWith( this.rootContext ) && !reTestNodeFolder.test( x ) );
-    for ( let file of filteredDependencies ) {
-        this.addDependency( file );
+    const reTestNodeFolder = /[\/\\]node_modules[\/\\]/;
+    const filteredDependencies = filter(result.dependencies, x =>
+        x.startsWith(this.rootContext) && !reTestNodeFolder.test(x));
+    for (let file of filteredDependencies) {
+        this.addDependency(file);
     }
 
-    if ( this.loaderIndex > 0 ) {
-        return htmlResult;
-    } else {
-        const json = JSON.stringify( htmlResult )
-            .replace( /\u2028/g, '\\u2028' )
-            .replace( /\u2029/g, '\\u2029' );
-        return `module.exports = ${json}`;
-    }    
-};
+    // In case of AOT build add the resulting HTML to the assets
+    if (this._compilation.name === "angular-compiler:resource") {
+        const compilation = this._compilation;
+        const rawRequest = this._module.rawRequest;
+        const request = rawRequest.substring(0, rawRequest.lastIndexOf("?"));
+
+        // postpone to a later event, because when loader is invoked, the chunks don’t yet exist, and we need to register the file
+        compilation.hooks.processAssets.tap({
+            name: "tshtml-loader",
+            stage: webpack.Compilation.PROCESS_ASSETS_STAGE_PRE_PROCESS
+        }, (assets) => {
+            compilation.emitAsset(request, new webpack.sources.RawSource(htmlResult));
+            compilation.addChunk("resource").files.add(request);
+        });
+    }
+
+    return htmlResult;
+}
 
 // ----------------------------------------------------------------------------------
 //
 
-export function executeTemplate( code: string, fileName: string ) {
-    const dirName = dirname( fileName );
+export function executeTemplate(code: string, fileName: string) {
+    const dirName = dirname(fileName);
 
-    const output = compileCode( code, fileName );
+    const output = compileCode(code, fileName);
 
-    const script = new Script( output, { filename: fileName } );
+    const script = new Script(output, { filename: fileName });
 
-    const module = new Module( fileName );
+    const module = new Module(fileName);
     module.filename = fileName;
     module.loaded = true;
-    module.paths = ( Module as any )._nodeModulePaths( dirName );
+    module.paths = (Module as any)._nodeModulePaths(dirName);
 
-    const req = createRequireService( fileName );
+    const req = createRequireService(fileName);
 
     const sandbox = {
         __filename: fileName,
@@ -72,9 +80,9 @@ export function executeTemplate( code: string, fileName: string ) {
         require: req,
     };
 
-    script.runInNewContext( sandbox, {
+    script.runInNewContext(sandbox, {
         filename: fileName,
-    } );
+    });
 
     return {
         exports: sandbox.exports,
@@ -83,16 +91,16 @@ export function executeTemplate( code: string, fileName: string ) {
 }
 
 
-export function templateToString( builder: any ): string {
-    if ( isString( builder ) ) {
+export function templateToString(builder: any): string {
+    if (isString(builder)) {
         return builder;
-        
-    } else if ( typeof ( builder ) == "function" ) {
-        return ( new builder() ).toString();
-        
-    } else if ( isArray( builder ) || isTag( builder ) ) {
-        return tagToString( builder );
-        
+
+    } else if (typeof (builder) == "function") {
+        return (new builder()).toString();
+
+    } else if (isArray(builder) || isTag(builder)) {
+        return tagToString(builder);
+
     } else {
         return builder.toString();
     }
@@ -103,22 +111,22 @@ let compilerService: Service;
 
 /***
  * Compiles given TypeScript code
- * @param code 
+ * @param code
  * @param fileName
  */
-function compileCode( code: string, fileName: string ) {
+function compileCode(code: string, fileName: string) {
     const tsFileName = `${fileName}.ts`;
 
-    if( compilerService == null ) {
-        compilerService = register( {
+    if (compilerService == null) {
+        compilerService = register({
             compilerOptions: {
                 module: "CommonJS",
                 target: "es2015",
             },
-        } );
+        });
     }
 
-    return compilerService.compile( code, tsFileName );
+    return compilerService.compile(code, tsFileName);
 }
 
 
@@ -136,45 +144,44 @@ interface ModuleInfo extends NodeJS.Module {
 }
 
 
-
 /***
  * Create a logging wrapper for "require" function.
  * @param fileName
  */
-function createRequireService( fileName: string ) {
-    const req = Module.createRequire( fileName );
+function createRequireService(fileName: string) {
+    const req = Module.createRequire(fileName);
 
     const cache = req.cache;
     const dependencies: string[] = [];
 
-    const resolveFn = ( id: string, options?: { paths?: string[]; } ) => {
-        return req.resolve( id, options );
+    const resolveFn = (id: string, options?: { paths?: string[]; }) => {
+        return req.resolve(id, options);
     };
     resolveFn.paths = req.resolve.paths;
 
-    const requireFn: NodeRequireWithLogging = ( request ) => {
+    const requireFn: NodeRequireWithLogging = (request) => {
         let filePath: string;
         try {
-            filePath = resolveFn( request );
-        } catch ( error ) {
+            filePath = resolveFn(request);
+        } catch (error) {
             // Likely file doesn't exist, so short circuit to the default implementation
-            return req( request );
+            return req(request);
         }
 
         // Try to get the module from cache and check it's modification time
         let module: ModuleInfo = cache[filePath];
-        if ( module != null ) {
-            cleanOutdatedModules( module, {} );
+        if (module != null) {
+            cleanOutdatedModules(module, {});
         }
 
-        const result = req( request );
+        const result = req(request);
 
         // Store last modification date
         const allFiles = {};
-        storeModuleTimes( cache[filePath], allFiles );
+        storeModuleTimes(cache[filePath], allFiles);
 
         // Store request to the dependency resolution log
-        dependencies.push( ...keys( allFiles ) );
+        dependencies.push(...keys(allFiles));
 
         return result;
     };
@@ -186,50 +193,50 @@ function createRequireService( fileName: string ) {
     requireFn.dependencies = dependencies;
 
     return requireFn;
-    
+
     // ---
-    function cleanOutdatedModules( module: ModuleInfo, allFiles: Dictionary<boolean> ): boolean {
+    function cleanOutdatedModules(module: ModuleInfo, allFiles: Dictionary<boolean>): boolean {
         allFiles[module.filename] = true;
 
         let doClean = false;
 
         // If the module file was modified since last access -> remove it from the cache
-        if ( module.fileLastModified != null ) {
-            const moduleTime = statSync( module.filename ).mtimeMs;
-            if ( module.fileLastModified != moduleTime ) {
+        if (module.fileLastModified != null) {
+            const moduleTime = statSync(module.filename).mtimeMs;
+            if (module.fileLastModified != moduleTime) {
                 doClean = true;
             }
         }
 
         // Check if any child module is outdated
-        for ( let childModule of module.children ) {
-            if ( allFiles[childModule.filename] || !checkFilename( childModule.filename )) continue;
-            doClean = cleanOutdatedModules( childModule, allFiles ) || doClean;
+        for (let childModule of module.children) {
+            if (allFiles[childModule.filename] || !checkFilename(childModule.filename)) continue;
+            doClean = cleanOutdatedModules(childModule, allFiles) || doClean;
         }
-        
-        if( doClean ) {
+
+        if (doClean) {
             delete cache[module.filename];
         }
 
         return doClean;
     }
 
-    function storeModuleTimes( module: ModuleInfo, allFiles: Dictionary<boolean> ) {
+    function storeModuleTimes(module: ModuleInfo, allFiles: Dictionary<boolean>) {
         allFiles[module.filename] = true;
-        
-        if( module.fileLastModified == null) {
-            module.fileLastModified = statSync( module.filename ).mtimeMs;
+
+        if (module.fileLastModified == null) {
+            module.fileLastModified = statSync(module.filename).mtimeMs;
         }
 
         let childModule: ModuleInfo;
-        for ( childModule of module.children ) {
-            if ( allFiles[childModule.filename] || !checkFilename( childModule.filename )) continue;
-            storeModuleTimes( childModule, allFiles );
+        for (childModule of module.children) {
+            if (allFiles[childModule.filename] || !checkFilename(childModule.filename)) continue;
+            storeModuleTimes(childModule, allFiles);
         }
     }
-    
-    function checkFilename( filename: string ) {
-        return filename.indexOf( "\\node_modules\\" ) === -1;
+
+    function checkFilename(filename: string) {
+        return filename.indexOf("\\node_modules\\") === -1;
     }
-    
+
 }
