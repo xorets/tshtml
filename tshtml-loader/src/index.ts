@@ -120,8 +120,9 @@ function compileCode(code: string, fileName: string) {
     if (compilerService == null) {
         compilerService = register({
             compilerOptions: {
-                module: "CommonJS",
-                target: "es2015",
+                module: "Node16",
+                target: "es2022",
+                moduleResolution: "node16",
             },
         });
     }
