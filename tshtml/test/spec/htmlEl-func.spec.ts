@@ -1,4 +1,4 @@
-import { htmlEl, tag } from "../../src";
+import { htmlEl, tag } from "../../src/index";
 
 describe( "htmlEl function", () => {
 

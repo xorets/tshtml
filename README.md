@@ -5,6 +5,12 @@
 npm i tshtml tshtml-loader
 ```
 
+## Documentation
+- **[Angular 21 Integration Guide](docs/angular-21-integration.md)** — Step-by-step guide to add tshtml to an Angular 21 project
+- **[User Guide](docs/user-guide.md)** — Template authoring, API reference, and examples  
+- **[Development Guide](docs/development.md)** — Repository structure, contributing, and development setup
+- **[API Reference](docs/typedoc/index.html)** — Complete TypeScript API documentation
+
 
 ## What is it?
 tshtml-file is a TypeScript template that emits HTML code during build-time.
@@ -130,11 +136,50 @@ Finally you just use tshtml-files instead of html-files in your Angular componen
 
 ## Library development
 
-In tshtml folder:
-```
-npm run test
+This project uses npm workspaces for managing multiple packages (tshtml and tshtml-loader).
+
+### Quick start
+
+From the root directory:
+```bash
+# Install dependencies for all packages
+npm install
+
+# Build all packages
 npm run build
+
+# Run tests for all packages
+npm run test
+
+# Generate coverage reports for all packages
+npm run coverage
 ```
+
+### Individual package development
+
+To work on a specific package, you can use the workspace flag:
+
+```bash
+# Build only tshtml
+npm run build -w tshtml
+
+# Run tests only for tshtml-loader
+npm run test -w tshtml-loader
+
+# Get coverage for specific package
+npm run coverage -w tshtml
+```
+
+### Available scripts
+
+- `npm run build` - Build all packages
+- `npm run build-watch` - Watch mode for tshtml (useful during development)
+- `npm run test` - Run tests for all packages
+- `npm run test:watch` - Run tests in watch mode for tshtml
+- `npm run coverage` - Generate coverage reports for all packages
+- `npm run coverage:report` - Generate coverage reports and open HTML report (requires `open` command)
+- `npm run clean` - Remove all build artifacts and coverage reports
+- `npm run docs` - Generate API documentation for tshtml
 
 ### Debugging
 
@@ -145,12 +190,15 @@ If you need to debug the tests, then you can do the following:
    
 1. Configure you debugger to attach to Node.js at port 9229. Start the debugger
 
-1. Start test: `node ./test/jasmine "TEST NAME"`
+1. Start test from the package directory: `npm run test -- --filter "TEST NAME"`
 
-### tshtml-loader
+### Code Coverage
 
-In tshtml-loader folder:
-```
-npm run build
-```
+After running `npm run coverage`, view the coverage reports:
+- **tshtml**: `tshtml/coverage/index.html`
+- **tshtml-loader**: `tshtml-loader/coverage/index.html`
+
+The project maintains high code quality with target coverage goals:
+- tshtml: 98%+ statement coverage
+- tshtml-loader: 75%+ coverage (webpack context testing limitations)
 

@@ -9,20 +9,28 @@
   "bin": "./lib/export-template.js",
   "scripts": {
     "build": "tsc ./src/index.ts ./src/export-template.ts --outdir ./lib -d",
-    "build-watch": "tsc ./src/index.ts --outdir ./lib -d -w"
+    "build-watch": "tsc ./src/index.ts --outdir ./lib -d -w",
+    "test": "tsx ./test/jasmine.js",
+    "coverage": "nyc tsx ./test/jasmine.js"
   },
   "author": "LOGEX Group",
   "license": "MIT",
   "devDependencies": {
+    "@types/jasmine": "^5.1.7",
     "@types/lodash": "4.17.15",
     "@types/node": "22.13.5",
-    "@types/webpack": "5.28.5"
+    "@types/webpack": "5.28.5",
+    "jasmine": "5.6.0",
+    "nyc": "^17.1.0",
+    "tsx": "^4.21.0"
   },
   "dependencies": {
     "lodash": "^4.17.21",
     "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0",
-    "tshtml": "^1.4.0",
+    "tshtml": "file:../tshtml",
     "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "diff": "^8.0.3"
   }
 }

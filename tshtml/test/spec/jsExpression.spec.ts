@@ -1,4 +1,4 @@
-import { expr } from "../../src";
+import { expr } from "../../src/index";
 
 
 describe( "jsExpression", () => {

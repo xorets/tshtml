@@ -7,32 +7,80 @@ import {
 } from "lodash";
 
 /**
- * Transform arguments object into another arguments object renaming arguments
- * along the way (optionally) and applying transformations (optionally).
- * If an arguments is not specified in the mapping object, then it is  copied as-is.
- * Example call:
+ * Mapping configuration for transforming an attribute.
+ * Allows renaming, providing default values, and applying custom transformation functions.
+ * 
+ * @class TransformArgumentMapping
+ * @property {string} [to] - The new attribute name (if different from original)
+ * @property {*} [default] - Default value if attribute is not provided
+ * @property {Function} [transform] - Function to transform attribute value
+ * 
+ * @example
+ * {
+ *     to: 'ng-if',
+ *     default: false,
+ *     transform: (val) => !!val
+ * }
+ */
+export class TransformArgumentMapping {
+    /**
+     * The output attribute name. If not specified, the original name is used.
+     * @type {string}
+     */
+    to?: string;
+    
+    /**
+     * Default value to use if the attribute is not provided.
+     * @type {*}
+     */
+    default?: any;
+    
+    /**
+     * Optional transformation function to apply to the attribute value.
+     * Applied to both input values and default values.
+     * @type {Function}
+     */
+    transform?: ( arg: any ) => any;
+}
+
+
+/**
+ * Transforms an attributes object by renaming attributes, providing defaults, and applying transformations.
+ * 
+ * This is useful for normalizing attributes across different template syntaxes or frameworks
+ * (e.g., converting Angular `ngIf` to `ng-if`, providing default values, etc.).
+ * 
+ * @param {Dictionary<any>} args - Original attributes object
+ * @param {Dictionary<string | TransformArgumentMapping>} [mapping] - Mapping configuration
+ * @returns {Dictionary<any>} Transformed attributes object
+ * 
+ * @example
  * ```typescript
- * this.transform(
- *     {
- *         "href": "/uhus.html",
- *         "ngIf": "ctl.isNew"
- *     },
- *     {
- *         ngIf: "ng-if",
- *         ngShow: { to: "ng-show", default: false }
- *     } ) );
+ * import { transformAttrs } from 'tshtml';
+ * 
+ * const input = {
+ *     href: '/page',
+ *     ngIf: 'isVisible'
+ * };
+ * 
+ * const output = transformAttrs(input, {
+ *     ngIf: 'ng-if',  // Rename
+ *     ngShow: { 
+ *         to: 'ng-show', 
+ *         default: false  // Provide default
+ *     }
+ * });
+ * 
+ * // Result:
+ * // {
+ * //     href: '/page',
+ * //     'ng-if': 'isVisible',
+ * //     'ng-show': false
+ * // }
  * ```
- * Here we have argument _href_ passed as-is, _ngIf_ gets converted to _ng-if_,
- * and _ng-show_ is added because it has default value specified.
- *
- * Optional _transform_ parameter allows for transform argument value during
- * mapping. Default values gets transformed too.
- *
- * @param args Original arguments object
- * @param mapping Mapping configuration
  */
 export function transformAttrs( args: Dictionary<any>,
-                                mapping?: Dictionary<string | TransformArgumentMapping> ) {
+                                mapping?: Dictionary<string | TransformArgumentMapping> ): Dictionary<any> {
 
     if ( mapping == null ) return args;
 
@@ -88,11 +136,4 @@ export function transformAttrs( args: Dictionary<any>,
     } );
 
     return result;
-}
-
-
-export class TransformArgumentMapping {
-    to?: string;
-    default?: any;
-    transform?: ( any ) => any;
 }

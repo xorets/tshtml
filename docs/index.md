@@ -5,8 +5,11 @@
 npm i tshtml tshtml-loader
 ```
 
-## Code documentation
-(Reference documentation)[./typedoc/index.html]
+## Documentation
+- **[Angular 21 Integration Guide](./angular-21-integration.md)** — Step-by-step guide to add tshtml to your Angular 21 project
+- **[User Guide](./user-guide.md)** — Template authoring, API reference, and examples
+- **[Development Guide](./development.md)** — Repository structure, contributing, and development setup
+- **[API Reference](./typedoc/index.html)** — Complete TypeScript API documentation
 
 
 ## What is it?

@@ -3,6 +3,7 @@
 /build
 /node_modules
 /packages
+/tmp
 
 package-lock.json
 yarn.lock
@@ -16,5 +17,21 @@ yarn.lock
 
 *.dotsettings.user
 
+# Build outputs - compiled test folders
+tshtml/test/compiled
+tshtml-loader/test/compiled
+
+# TypeScript and coverage outputs
 tshtml/lib
+tshtml/.nyc_output
+tshtml/coverage
+
 tshtml-loader/lib
+tshtml-loader/.nyc_output
+tshtml-loader/coverage
+
+# Sample projects
+samples/*/node_modules
+samples/*/.angular
+samples/*/dist
+samples/*/.env.local

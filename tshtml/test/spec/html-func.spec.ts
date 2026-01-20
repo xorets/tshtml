@@ -1,4 +1,4 @@
-import { EmptyAttribute, html, parseHtml, tag } from "../../src";
+import { EmptyAttribute, html, parseHtml, tag } from "../../src/index";
 
 describe( "html function", () => {
 

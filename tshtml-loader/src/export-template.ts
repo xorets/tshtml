@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+/**
+ * CLI helper to compile a single .tshtml file to .html on disk.
+ */
 import { readFile, writeFile } from "fs";
 import * as path from "node:path";
 import { executeTemplate, templateToString } from "./index";

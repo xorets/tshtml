@@ -1,4 +1,4 @@
-import { html, isTemplateValue, tagToString, TemplateElement, TemplateValue } from "../../src";
+import { html, isTemplateValue, tagToString, TemplateElement, TemplateValue } from "../../src/index";
 
 describe( "TemplateValue", () => {
 

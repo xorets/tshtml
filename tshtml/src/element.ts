@@ -9,6 +9,17 @@ import { cssClass, CssClassValue } from "./cssClass";
 
 /**
  * Attributes of an HTML element representation.
+ * A key-value collection where keys are attribute names and values are attribute values.
+ * Special reserved keys 'tag' and 'children' cannot be used as attributes.
+ * 
+ * @typedef {Object} TemplateAttributes
+ * @example
+ * {
+ *     id: 'main',
+ *     class: 'container',
+ *     'data-value': 123,
+ *     disabled: true
+ * }
  */
 export interface TemplateAttributes {
     [name: string]: TemplateAttributeValue;
@@ -16,47 +27,99 @@ export interface TemplateAttributes {
     children?: never;
 }
 
-export type TemplateAttributeValue = string | number | boolean | symbol | TemplateValue;
+/**
+ * Value type for HTML attributes. Can be a primitive, TemplateValue (for dynamic rendering),
+ * a style object, or other objects with toString() method.
+ * 
+ * @typedef {string | number | boolean | symbol | TemplateValue | Record<string, string | number>} TemplateAttributeValue
+ */
+export type TemplateAttributeValue = string | number | boolean | symbol | TemplateValue | Record<string, string | number>;
 
 
 /**
- * TemplateItem is either a "tag" object or plain string that represents text node.
+ * TemplateItem is either a TemplateElement (tag object) or plain string (text node).
+ * Represents a single item in the template tree.
+ * 
+ * @typedef {TemplateElement | TemplateValue | string} TemplateItem
  */
 export type TemplateItem = TemplateElement | TemplateValue | string;
 
 
 /**
- * TemplateFragment cold be either a template item (element or string) or array of such items.
+ * TemplateFragment can be either a single template item or an array of items.
+ * Used as a flexible way to pass children to tags.
+ * 
+ * @typedef {TemplateItem | TemplateItem[]} TemplateFragment
  */
 export type TemplateFragment = TemplateItem | TemplateItem[];
 
 
 /**
- * Helper class for working with HTML element representation. Allows for modifying attributes of the element
- * after creation.
+ * Represents an HTML element in the template tree.
+ * Allows for dynamic attribute and class management, child element manipulation,
+ * and rendering to HTML strings.
+ * 
+ * @class TemplateElement
+ * @example
+ * ```typescript
+ * import { tag } from 'tshtml';
+ * 
+ * const el = tag('div', { id: 'main' });
+ * el.attr('class', 'container');
+ * el.appendChild('Hello World');
+ * el.toString(); // '<div id="main" class="container">Hello World</div>'
+ * ```
  */
 export class TemplateElement {
 
     // ----------------------------------------------------------------------------------
     // Fields
+    
+    /**
+     * CSS classes for this element. Dynamically managed through the CssClassValue interface.
+     * @type {CssClassValue}
+     */
     class: CssClassValue;
+    
+    /**
+     * Style attribute value. Can be a string or TemplateValue.
+     * @type {TemplateValue}
+     */
     style: TemplateValue;
 
 
     // ----------------------------------------------------------------------------------
-    //
+    // Constructor
+    
+    /**
+     * Creates a new HTML element.
+     * 
+     * @param {string} tag - The HTML tag name (e.g., 'div', 'span', 'h1')
+     * @param {TemplateItem[]} [children] - Optional initial child elements
+     */
     constructor( public tag: string,
                  public children?: TemplateItem[] ) {
         this.class = new CssClassValue();
     }
 
 
+    // ----------------------------------------------------------------------------------
+    // Methods
+    
     /**
-     * Fluent method that adds attribute to this element.
-     * @param name Attribute name
-     * @param value Attribute value
+     * Fluent method that sets a single attribute on this element.
+     * Special handling: the 'class' attribute updates the class object directly.
+     * 
+     * @param {string} name - Attribute name
+     * @param {TemplateAttributeValue} value - Attribute value
+     * @returns {TemplateElement} This element for method chaining
+     * 
+     * @example
+     * el.attr('id', 'main')
+     *   .attr('data-value', 123)
+     *   .attr('class', 'active selected');
      */
-    attr( name: string, value: TemplateAttributeValue ) {
+    attr( name: string, value: TemplateAttributeValue ): TemplateElement {
         if ( name === "class" ) {
             this.class = cssClass( value as any );
             
@@ -69,10 +132,19 @@ export class TemplateElement {
 
 
     /**
-     * Fluent method that adds all attributes from given collection to this element.
-     * @param attrs Name-value collection of attributes.
+     * Fluent method that sets all attributes from the given collection.
+     * 
+     * @param {TemplateAttributes} attrs - Key-value collection of attributes to set
+     * @returns {TemplateElement} This element for method chaining
+     * 
+     * @example
+     * el.attrs({
+     *     id: 'main',
+     *     class: 'container active',
+     *     'data-value': 42
+     * });
      */
-    attrs( attrs: TemplateAttributes ) {
+    attrs( attrs: TemplateAttributes ): TemplateElement {
         if ( attrs == null ) {
             return this;
         }
@@ -86,10 +158,22 @@ export class TemplateElement {
 
 
     /**
-     * Fluent method that appends given fragment to the parent element.
-     * @param item The element to add.
+     * Fluent method that appends a child element or text to this element.
+     * If a string containing HTML is passed, it will be parsed into elements.
+     * 
+     * @param {TemplateItem} item - The child element or text to append
+     * @returns {TemplateElement} This element for method chaining
+     * 
+     * @example
+     * const el = tag('div');
+     * el.appendChild('Hello')
+     *   .appendChild(tag('br'))
+     *   .appendChild('World');
+     *   
+     * // Parse HTML string
+     * el.appendChild('<p>Parsed HTML</p>');
      */
-    appendChild( item: TemplateItem ) {
+    appendChild( item: TemplateItem ): TemplateElement {
         if ( this.children == null ) {
             this.children = [];
         }
@@ -107,40 +191,4 @@ export class TemplateElement {
 
         return this as TemplateElement;
     }
-
-
-    /**
-     * Gets the classes array.
-     * If necessary, converts attrs.class into the array by splitting
-     * string by spaces.
-     */
-/*
-    getClasses() {
-        const attrsCls = this.class;
-        if ( isArray( attrsCls ) ) {
-            return attrsCls;
-        }
-
-        this.class = filter(
-            isString( attrsCls ) ? attrsCls.split( " " ) : [],
-            x => x && !isEmpty( x.trim() ) );
-
-        return this.class as string[];
-    }
-*/
-
-
-    /**
-     * Adds the class to the "class" array.
-     * @param cls Class to add.
-     */
-    /*addClass( cls: string ) {
-        const classes = this.getClasses();
-
-        if ( !includes( classes, cls ) ) {
-            classes.push( cls );
-        }
-
-        return this as TemplateElement;
-    }*/
 }
