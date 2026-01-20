@@ -1,15 +1,30 @@
 {
   "version": "1.4.0",
-  "description": "",
+  "description": "TypeScript HTML template engine",
   "name": "tshtml",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts"
+  ],
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -b tsconfig.json",
     "build-watch": "tsc -b tsconfig.json -w",
     "test": "tsx ./test/jasmine.js",
     "coverage": "nyc tsx ./test/jasmine.js",
-    "build-docs": "typedoc ./src/index.ts --out ../docs/typedoc"
+    "build-docs": "typedoc ./src/index.ts --out ../docs/typedoc",
+    "prepublishOnly": "npm run test && npm run build"
   },
   "author": "LOGEX Group",
   "license": "MIT",

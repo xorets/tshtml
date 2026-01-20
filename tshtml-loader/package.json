@@ -1,17 +1,30 @@
 {
   "name": "tshtml-loader",
-  "version": "1.3.0",
-  "description": "",
-  "main": "lib/index.js",
+  "version": "1.4.0",
+  "description": "Webpack loader for tshtml template files",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
-    "lib/*.*"
+    "dist/**/*.js",
+    "dist/**/*.d.ts"
   ],
-  "bin": "./lib/export-template.js",
+  "bin": "./dist/export-template.js",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
   "scripts": {
-    "build": "tsc ./src/index.ts ./src/export-template.ts --outdir ./lib -d",
-    "build-watch": "tsc ./src/index.ts --outdir ./lib -d -w",
+    "build": "tsc --project . --outDir ./dist --module commonjs --declaration --declarationMap --skipLibCheck true",
+    "build-watch": "tsc --project . --outDir ./dist -d -w",
     "test": "tsx ./test/jasmine.js",
-    "coverage": "nyc tsx ./test/jasmine.js"
+    "coverage": "nyc tsx ./test/jasmine.js",
+    "prepublishOnly": "npm run test && npm run build"
   },
   "author": "LOGEX Group",
   "license": "MIT",
@@ -27,7 +40,7 @@
   "dependencies": {
     "lodash": "^4.17.21",
     "ts-node": "^10.9.2",
-    "tshtml": "file:../tshtml",
+    "tshtml": "^1.4.0",
     "typescript": "^5.9.3"
   },
   "overrides": {

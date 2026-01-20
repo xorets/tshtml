@@ -22,13 +22,16 @@ tshtml/test/compiled
 tshtml-loader/test/compiled
 
 # TypeScript and coverage outputs
-tshtml/lib
+tshtml/dist
 tshtml/.nyc_output
 tshtml/coverage
 
-tshtml-loader/lib
+tshtml-loader/dist
 tshtml-loader/.nyc_output
 tshtml-loader/coverage
+
+# Root build and distribution
+/dist
 
 # Sample projects
 samples/*/node_modules

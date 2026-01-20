@@ -8,14 +8,13 @@
     "sourceMap": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "moduleResolution": "node",
     "lib": [
-      "es2017",
-      "dom"
+      "es2017"
     ]
   },
   "files": [
-    "src/index.ts"
+    "src/index.ts",
+    "src/export-template.ts"
   ],
   "exclude": [
     "node_modules"
