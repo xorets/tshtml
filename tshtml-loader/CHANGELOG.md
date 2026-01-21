@@ -1,5 +1,13 @@
 # tshtml-loader
 
+## 1.4.1
+
+### Patch Changes
+
+- 70974c0: Version 1.4
+- Updated dependencies [70974c0]
+  - tshtml@1.4.1
+
 ## 1.4.0
 
 ### Minor Changes
