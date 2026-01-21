@@ -1,5 +1,11 @@
 # tshtml
 
+## 1.4.3
+
+### Patch Changes
+
+- 126573f: Fixing publishing pipeline
+
 ## 1.4.2
 
 ### Patch Changes

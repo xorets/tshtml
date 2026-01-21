@@ -1,5 +1,13 @@
 # tshtml-loader
 
+## 1.4.3
+
+### Patch Changes
+
+- 126573f: Fixing publishing pipeline
+- Updated dependencies [126573f]
+  - tshtml@1.4.3
+
 ## 1.4.2
 
 ### Patch Changes
