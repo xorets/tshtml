@@ -1,5 +1,11 @@
 # tshtml
 
+## 1.4.2
+
+### Patch Changes
+
+- 34cc808: Enable npm trusted publishing and prepare patch release.
+
 ## 1.4.1
 
 ### Patch Changes
