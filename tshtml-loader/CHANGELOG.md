@@ -1,5 +1,13 @@
 # tshtml-loader
 
+## 1.4.2
+
+### Patch Changes
+
+- 34cc808: Enable npm trusted publishing and prepare patch release.
+- Updated dependencies [34cc808]
+  - tshtml@1.4.2
+
 ## 1.4.1
 
 ### Patch Changes

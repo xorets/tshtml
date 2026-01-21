@@ -1,5 +1,5 @@
 {
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "TypeScript HTML template engine",
   "name": "tshtml",
   "main": "dist/index.js",
