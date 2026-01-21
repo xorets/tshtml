@@ -24,6 +24,7 @@
   "scripts": {
     "build": "tsc --project . --outDir ./dist --module commonjs --declaration --declarationMap --skipLibCheck true",
     "build-watch": "tsc --project . --outDir ./dist -d -w",
+    "pretest": "cd ../tshtml && npm run build --if-present",
     "test": "tsx ./test/jasmine.js",
     "coverage": "nyc tsx ./test/jasmine.js",
     "prepublishOnly": "npm run test && npm run build"
