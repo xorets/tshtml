@@ -1,9 +1,23 @@
 # tshtml User Guide
 
 ## What is tshtml?
-- A TypeScript-first HTML template language executed at build time
+tshtml is a TypeScript template system that generates HTML at **build time**, not at runtime:
+
+- Templates are written as TypeScript code and executed during the webpack build process
+- The resulting HTML is static and becomes part of your Angular components
 - Ships with a webpack loader (`tshtml-loader`) that turns `.tshtml` files into HTML
 - Provides a small runtime API (`tag`, `html`, `cssClass`, `expr`, etc.) for programmatic template generation
+- **No runtime template execution**: template logic executes at build time
+
+### When to Use tshtml
+
+tshtml is most useful for:
+
+- **Template inheritance** for component class hierarchies (Angular can inherit behavior, but not templates)
+- **Reusable markup helpers** that emit Angular template syntax (bindings/directives) consistently across the app
+- **Lightweight components** where you want markup reuse without runtime component behavior
+
+Detailed use cases (with examples) live in [docs/index.md](./index.md#when-to-use-tshtml).
 
 ## Installation
 ```bash
@@ -89,21 +103,22 @@ export default div(
 - Use `tag` when you need to construct elements programmatically (e.g., loops that build deeply nested trees, or when working outside template literals).
 
 ```ts
-import { tag, cssClass } from "tshtml";
+import { tag } from "tshtml";
 
-const rows = [
-  { label: "A", value: 1 },
-  { label: "B", value: 2 },
+const columns = [
+  { header: "Name", field: "name" },
+  { header: "Email", field: "email" },
 ];
 
+// Build-time loop over `columns`, emitting an Angular runtime `*ngFor`.
 const table = tag(
   "table",
+  tag("thead",
+    tag("tr", columns.map(c => tag("th", c.header)))
+  ),
   tag("tbody",
-    rows.map(r =>
-      tag("tr",
-        tag("td", r.label),
-        tag("td", { class: cssClass(r.value > 1 ? "highlight" : "") }, `${r.value}`)
-      )
+    tag("tr", { "*ngFor": "let row of rows" },
+      columns.map(c => tag("td", `{{ row.${c.field} }}`))
     )
   )
 );

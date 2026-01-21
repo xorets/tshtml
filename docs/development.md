@@ -47,8 +47,9 @@ npm run test -- --filter "spec name"
 ```
 
 ## Releasing / publishing
-- Build artifacts live in `lib/` per package
+- Build artifacts live in `dist/` per package
 - Ensure tests and coverage pass before publishing
+- See [Workflows & Publishing](./github-workflows.md) for the CI/CD release flow (Changesets + npm trusted publishing)
 
 ## Coding guidelines
 - Prefer the builder APIs (`tag`, `html`, `cssClass`, `expr`)

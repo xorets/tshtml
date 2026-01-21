@@ -11,9 +11,11 @@
   "bin": "./dist/export-template.js",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",

@@ -1,10 +1,9 @@
 {
   "extension": [
-    ".js",
     ".ts"
   ],
   "include": [
-    "lib/index.js"
+    "src/**/*.ts"
   ],
   "exclude": [
     "**/*.spec.ts",

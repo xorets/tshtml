@@ -8,4 +8,6 @@ import { Component, signal } from '@angular/core';
 })
 export class App {
   protected readonly title = signal('tshtml-integration-guide');
+
+  now = new Date().toISOString();
 }

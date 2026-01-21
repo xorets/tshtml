@@ -2,6 +2,24 @@
 
 This guide explains how to modify a standard Angular 21 application to use tshtml and tshtml-loader for TypeScript-first HTML templates.
 
+## What is tshtml?
+
+tshtml is a TypeScript template system that generates HTML at **build time**, not at runtime. Your templates are written as TypeScript code and executed during the webpack build process, producing static HTML that becomes part of your Angular components.
+
+In Angular projects, `.tshtml` typically **emits Angular template syntax** (bindings and directives) rather than rendering runtime data.
+
+**Key Point**: All template logic runs during compilation. The resulting HTML is static with no runtime overhead.
+
+### Why Use tshtml with Angular?
+
+tshtml solves key Angular limitations:
+
+- **Template Inheritance** - Angular components inherit behavior but not templates. tshtml enables template inheritance through standard OOP class patterns.
+- **Reusable Markup Helpers** - Build complex HTML structures with Angular directives programmatically.
+- **Lightweight Components** - Replace components that only provide markup with faster build-time templates.
+
+**[See detailed examples and use cases →](./index.md#when-to-use-tshtml)**
+
 ## Prerequisites
 
 - **Node.js**: 18+ recommended
@@ -129,6 +147,7 @@ export default html`
     <h1>Welcome to tshtml!</h1>
     <p>This template was generated at build-time using TypeScript.</p>
     <p>Build time: ${new Date().toISOString()}</p>
+    <p>Runtime (Angular binding): {{ now }}</p>
   </div>
 `;
 ```
@@ -149,6 +168,7 @@ import template from './app.component.tshtml';
 })
 export class AppComponent {
   title = 'My App';
+  now = new Date().toISOString();
 }
 ```
 
@@ -162,6 +182,7 @@ Or using `templateUrl`:
 })
 export class AppComponent {
   title = 'My App';
+  now = new Date().toISOString();
 }
 ```
 
@@ -181,7 +202,7 @@ Your application will compile with tshtml support. Visit `http://localhost:4200`
 
 ## Advanced: Template Composition
 
-tshtml allows you to compose templates programmatically:
+tshtml allows you to compose templates programmatically at build time. Prefer emitting Angular directives (e.g. `*ngFor`) when the data is only available at runtime.
 
 ```typescript
 // shared-header.tshtml
@@ -199,19 +220,19 @@ export default html`
 import { html } from 'tshtml';
 import header from './shared-header.tshtml';
 
-const items = ['Item 1', 'Item 2', 'Item 3'];
-
 export default html`
   <div>
     ${header}
     <main>
       <ul>
-        ${items.map(item => html`<li>${item}</li>`)}
+        <li *ngFor="let item of items">{{ item }}</li>
       </ul>
     </main>
   </div>
 `;
 ```
+
+**Note**: This emits Angular template code. At runtime, Angular will render `items` (a component field) via `*ngFor`.
 
 ## Troubleshooting
 
@@ -231,7 +252,7 @@ export default html`
 
 ### Build performance slow
 - Initial builds may be slower when using custom webpack; subsequent hot reloads are typically 2-5 seconds
-- Consider using local file:// references for development to avoid npm package overhead
+
 
 ## Minimal Configuration Checklist
 
@@ -248,15 +269,23 @@ You've successfully integrated tshtml when:
 
 ## Performance Notes
 
-- **Build time**: First build ~10-15 seconds, subsequent hot reloads ~2-5 seconds
-- **Bundle size**: tshtml adds minimal overhead (loader runs only at build time)
-- **Runtime**: No runtime dependency; templates are pre-rendered to HTML
+- **Build time**: Templates are processed during webpack compilation
+  - First build: ~10-15 seconds
+  - Hot reloads: ~2-5 seconds
+- **Runtime performance**: Zero overhead
+  - Templates are pre-rendered to static HTML at build time
+  - No template evaluation or processing happens at runtime
+  - Identical performance to hand-written HTML templates
+- **Bundle size**: Minimal impact
+  - tshtml-loader runs only at build time and is not included in the bundle
+  - Only the generated HTML is included in your application
+  - The tshtml runtime API is not needed unless you use rendering functions at runtime (rare)
 
 ## Next Steps
 
 - Read the [User Guide](./user-guide.md) for advanced template features
 - Check [API Documentation](./typedoc/index.html) for complete tshtml API
-- See `samples/angular-tshtml-sample/` for a working Angular 21 + tshtml example
+- See [../samples/tshtml-integration-guide](../samples/tshtml-integration-guide) for a working Angular 21 + tshtml example
 
 ## Support
 

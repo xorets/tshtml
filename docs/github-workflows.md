@@ -13,9 +13,10 @@ The monorepo uses **GitHub Actions** to automate:
 
 - **Changesets**: Manages version bumping and changelog generation across both packages in sync
 - **GitHub Actions**: Automated workflows that run on specific triggers
-- **npm link**: Local development with symlinked packages (no publishing needed)
-- **npm pack**: Create tarballs for pre-release testing
-- **npm provenance**: Cryptographic proof that packages were built by your CI/CD pipeline
+- **npm trusted publishing (OIDC)**: Publish from GitHub Actions without long-lived npm tokens
+- **npm link**: Local development with symlinked packages
+- **npm pack**: Optional tarballs for “as-published” testing
+- **npm provenance**: Cryptographic proof a package was built/published from your CI
 
 ## Workflow Files
 
@@ -37,7 +38,7 @@ Two GitHub Actions workflow files control the process:
 
 ### 2. `.github/workflows/publish.yml` - Automated Publishing
 
-**Triggers**: Runs when `.changeset/` folder is modified on `main` branch
+**Triggers**: Runs on pushes to `main` when changes touch `.changeset/`, package folders, or the publish workflow itself
 
 **Two-phase process**:
 
@@ -57,50 +58,49 @@ The `changesets/action` automatically:
 After the Version PR is merged, the workflow:
 1. Builds both packages (`npm run build`)
 2. Runs full test suite
-3. Publishes each package to npm with `--provenance` flag
-4. Creates GitHub Release notes
+3. Publishes packages to npm (via Changesets)
 
 **Important**: Publish only happens after Version PR merge. You control the timing.
 
-## Testing Packages Locally
+## Local Development (Recommended)
 
-Before publishing, you can test the packaged versions locally:
+For day-to-day development, use the monorepo’s `npm link` tooling so you can iterate on `tshtml` / `tshtml-loader` without publishing.
 
-### Packing Packages to `/dist`
+### Link the monorepo packages
 
-Create tarball packages ready for distribution or local testing:
+From the repository root:
+
+```bash
+npm run link
+```
+
+This uses the root scripts:
+- `npm run link`: links `tshtml`, then links `tshtml-loader` (and links it against the local `tshtml`)
+- `npm run unlink`: removes the global links
+
+### Use the linked packages in a consuming project
+
+In your Angular (or other) project:
+
+```bash
+npm link tshtml tshtml-loader
+```
+
+When done:
+
+```bash
+npm unlink tshtml tshtml-loader
+```
+
+### Optional: “as-published” tarball testing
+
+If you specifically want to test the exact tarballs that would be published (a closer approximation to npm install), you can still use:
 
 ```bash
 npm run pack
 ```
 
-This:
-1. Builds both packages
-2. Creates `dist/tshtml-1.4.0.tgz` and `dist/tshtml-loader-1.4.0.tgz`
-
-**Why `/dist`?** This is a best practice for monorepos:
-- Keeps source code clean and separate from artifacts
-- Allows consumers to test packages before publishing to npm
-- Enables version-specific testing (e.g., test with 1.4.0, then 1.5.0)
-- Can be committed to git for CI/CD workflows
-
-### Using Packaged Versions in Tests
-
-You can test projects using the packaged versions (without npm):
-
-```json
-// In your test project's package.json
-{
-  "dependencies": {
-    "tshtml": "file:../dist/tshtml-1.4.0.tgz",
-    "tshtml-loader": "file:../dist/tshtml-loader-1.4.0.tgz"
-  }
-}
-```
-
-Then `npm install` will use the local tarballs instead of npm registry.
-
-**Example**: The [tshtml-integration-guide](../samples/tshtml-integration-guide) sample uses this approach to test against packaged versions.
+This builds both packages and writes `dist/*.tgz` at the repo root.
 
 ---
 
@@ -225,19 +225,20 @@ npm run test           # Verifies tests pass
 ```
 
 Each package generates:
-- `lib/index.js` + `lib/index.d.ts` (CommonJS with type definitions)
-- Supporting modules in `lib/`
+- `dist/index.js` + `dist/index.d.ts` (CommonJS with type definitions)
+- Supporting modules in `dist/`
 - Files excluded via `.npmignore`: source code, tests, coverage, etc.
 
 ### Publish Phase
 
 ```bash
-npm publish --workspace tshtml --provenance
-npm publish --workspace tshtml-loader --provenance
+changeset publish
 ```
 
+When publishing via **trusted publishing**, npm automatically generates provenance attestations and no npm publish token is required in CI.
+
 **What's Published**:
-- Only files in `lib/` folder (per `files` field in package.json)
+- Only files in `dist/` folder (per the `files` field in each package.json)
 - Type definitions (.d.ts files)
 - package.json with metadata
 - README.md (if linked in package.json)
@@ -247,27 +248,52 @@ npm publish --workspace tshtml-loader --provenance
 - Built by GitHub Actions workflow (specific commit/run)
 - Has full audit trail at npm registry
 
-Users can verify: `npm view tshtml@1.4.0 --json | grep provenance`
+Users can verify by inspecting `npm view tshtml@1.4.0 --json` and looking for provenance / attestation-related fields.
 
 ## Authentication
 
-Publishing requires npm authentication. Setup steps:
+### Recommended: npm trusted publishing (OIDC)
 
-### For Repository Maintainers
+npm now recommends **trusted publishing** for GitHub Actions. This creates a trust relationship between npm and GitHub Actions using OIDC, so publishes do not require a long-lived `NPM_TOKEN` secret.
 
-1. **Generate npm token** (at https://npmjs.com/settings/~/tokens):
-   - Click "Generate New Token"
-   - Select "Automation" type (allows npm publish)
-   - Copy the token
+High-level flow:
+- You configure each package on npmjs.com to trust this repo + workflow filename.
+- During `npm publish`, the npm CLI detects the GitHub Actions OIDC environment and authenticates using short-lived credentials.
 
-2. **Add to GitHub Secrets**:
-   - Go to repository Settings → Secrets and variables → Actions
-   - Click "New repository secret"
-   - Name: `NPM_TOKEN`
-   - Value: Paste the token
-   - Click "Add secret"
+**Prerequisites / limitations**:
+- Requires GitHub-hosted runners (self-hosted runners are not currently supported).
+- Requires npm CLI **11.5.1+**.
+- Trusted publishing applies to `npm publish`. If you have *private* npm dependencies, `npm ci` may still need a separate read-only token.
 
-3. **Token permissions**: Must have write access to both `tshtml` and `tshtml-loader` packages (or publish from npm account that owns them)
+#### Step 1: Configure trusted publishers on npmjs.com
+
+Do this for **each** package (`tshtml` and `tshtml-loader`):
+1. Open the package page on npmjs.com → **Settings**
+2. Find **Trusted Publisher**
+3. Select **GitHub Actions**
+4. Enter:
+    - Organization/user: your GitHub org/user
+    - Repository: `tshtml`
+    - Workflow filename: `publish.yml`
+    - (Optional) Environment name: only if you publish via a GitHub Environment
+
+Note: A package can have only one trusted publisher configuration at a time.
+
+#### Step 2: Ensure the workflow has OIDC permission
+
+The publish workflow must include:
+
+```yml
+permissions:
+  id-token: write
+```
+
+This repo’s publish workflow already requests this permission.
+It also pins npm to a version that supports trusted publishing.
+
+### Fallback: token-based publishing (not preferred)
+
+If you cannot use trusted publishing (for example, due to CI constraints), you can still publish with an automation token stored as a GitHub secret. Prefer trusted publishing when possible.
 
 ## Troubleshooting
 
@@ -298,12 +324,12 @@ git push origin your-branch
 
 ### Problem: "Invalid tag format" or npm publish errors
 
-**Cause**: Missing NPM_TOKEN secret in GitHub
+**Cause**: Trusted publishing not configured correctly (or missing/expired token if using fallback token publishing)
 
-**Solution**: 
-1. Check repository Settings → Secrets → Actions
-2. Verify `NPM_TOKEN` exists and is not expired
-3. Generate new token if needed
+**Solution**:
+1. Verify npm trusted publisher settings for both packages (repo + workflow filename must match exactly)
+2. Ensure the workflow has `permissions: id-token: write` and runs on a GitHub-hosted runner
+3. If using fallback token publishing, verify the token secret exists and is not expired
 
 ### Problem: Packages published with different versions
 
@@ -312,23 +338,6 @@ git push origin your-branch
 **Solution**: 
 1. Always use Changeset workflow (don't `npm publish` manually)
 2. The `fixed` configuration in `.changeset/config.json` enforces sync versions
-
-## Skipping Changesets (Advanced)
-
-To publish without creating a changeset PR (e.g., urgent hotfix):
-
-```bash
-npm pack -w tshtml              # Creates tshtml-1.4.0.tgz
-npm publish tshtml-1.4.0.tgz    # Publish directly (not recommended)
-```
-
-**⚠️ Warning**: This bypasses:
-- Automated version bumping
-- Changelog generation  
-- CHANGELOG.md synchronization
-- Provenance attestation
-
-**Only use for emergencies.** Always use the Changeset workflow for normal releases.
 
 ## File Reference
 
@@ -350,6 +359,7 @@ npm publish tshtml-1.4.0.tgz    # Publish directly (not recommended)
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
 - [npm Publishing Guide](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry)
 - [npm Provenance](https://docs.npmjs.com/generating-provenance-statements)
+- [npm Trusted Publishing (OIDC)](https://docs.npmjs.com/trusted-publishers)
 
 ## Quick Reference
 
@@ -381,7 +391,7 @@ View logs by clicking the workflow run name.
 
 ## Dependency Management with Dependabot
 
-The project uses **Dependabot** for automated dependency updates. Configuration is in [.github/dependabot.yml](.github/dependabot.yml).
+The project uses **Dependabot** for automated dependency updates. Configuration is in [.github/dependabot.yml](../.github/dependabot.yml).
 
 ### What Dependabot Does
 
@@ -406,43 +416,3 @@ Located in `.github/dependabot.yml`:
 
 To disable Dependabot, remove the `.github/dependabot.yml` file.
 
-## Alternative: Semantic-Release
-
-This monorepo uses **Changesets** for version management. Here's how it compares to **semantic-release**:
-
-### Changesets vs Semantic-Release
-
-| Feature | Changesets | semantic-release |
-|---------|-----------|------------------|
-| **Version Bumping** | Manual via changeset files | Automatic from commit messages |
-| **Changelog Generation** | Separate PR step | Automatic on publish |
-| **Control** | High - team decides when to publish | Low - publishes on every merge |
-| **Monorepo Support** | ✅ Built-in `fixed` groups | ✅ Good (needs config) |
-| **Learning Curve** | Easy - clear workflow | Medium - must follow conventions |
-| **Use Case** | Multiple maintainers, controlled releases | CI/CD teams, SemVer automation |
-
-### Why Changesets?
-
-We chose **Changesets** because:
-1. **Control**: You review and approve every version bump via PR
-2. **Clarity**: Easy to understand what changed in CHANGELOG
-3. **Safety**: Can release on schedule, not on every commit
-4. **Flexibility**: Handle monorepo versions together in one PR
-
-### If You Want Semantic-Release Instead
-
-Semantic-release automates the entire release:
-- Parses commit messages: `feat:` = minor, `fix:` = patch, `BREAKING CHANGE:` = major
-- Bumps versions automatically
-- Publishes immediately to npm
-- Generates changelogs automatically
-
-**Migration steps** (if you ever want to switch):
-```bash
-npm uninstall @changesets/cli
-npm install -D semantic-release
-```
-
-Then update `.github/workflows/publish.yml` to run `semantic-release` instead.
-
-**Recommendation**: Stick with Changesets. It gives you more control over releases. Migrate to semantic-release only if your team prefers fully automated releases with no human approval step.
