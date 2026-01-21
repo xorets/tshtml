@@ -10,7 +10,7 @@ npm i tshtml tshtml-loader
 - **[User Guide](./user-guide.md)** — Template authoring, API reference, and examples
 - **[Development Guide](./development.md)** — Repository structure, contributing, and development setup
 - **[Workflows & Publishing](./github-workflows.md)** — CI, Changesets release PRs, and publishing to npm (trusted publishing)
-- **[API Reference](./typedoc/index.html)** — Complete TypeScript API documentation
+- **[API Reference](https://xorets.github.io/tshtml/typedoc/)** — Complete TypeScript API documentation
 
 
 ## What is it?
@@ -30,7 +30,7 @@ But now you can write code in the template:
 ```typescript
 export default `
     <p>Hello world!</p>
-  <p>Build time is ${new Date().toISOString()}.</p>`;
+    <p>Build time is ${new Date().toISOString()}.</p>`;
 ```
 
 **Important**: This code is executed at build time only. The resulting HTML is static and fed to Angular. There's no runtime overhead—you get the same fast Angular templates, but generated through TypeScript metaprogramming.
