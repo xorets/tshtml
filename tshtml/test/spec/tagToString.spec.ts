@@ -2,13 +2,13 @@ import { EmptyAttribute, html, tag, tagToString } from "../../src/index";
 
 describe( "HTML generator", () => {
 
-    it( "should support simple round-trip", () => {
+    it( "should support simple round-trip with single element", () => {
         expect( tagToString( html`<p>Test</p>` ) )
             .toEqual( `<p>Test</p>` );
     } );
 
 
-    it( "should support simple round-trip", () => {
+    it( "should support simple round-trip with multiple elements", () => {
         expect( tagToString(
             html`<div>
                 <h1>Hello world!</h1>

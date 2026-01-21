@@ -14,13 +14,13 @@ describe( "cssClass", () => {
     } );
 
 
-    it( "should accept several arguments", () => {
+    it( "should accept several arguments with mixed spacing", () => {
         const c = cssClass( "red", "green   blue" );
         expect( c.value ).toEqual( ["red", "green", "blue"] );
     } );
 
 
-    it( "should accept several arguments", () => {
+    it( "should accept several arguments as separate strings", () => {
         const c = cssClass( "red", "green", "blue" );
         expect( c.value ).toEqual( ["red", "green", "blue"] );
     } );
