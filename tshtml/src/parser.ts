@@ -1,53 +1,13 @@
 import { isArray, isString } from "lodash";
-import { Parser, ParserOptions, Tokenizer } from "htmlparser2";
+import { Parser, ParserOptions } from "htmlparser2";
 import { TemplateAttributeValue, TemplateElement, TemplateItem } from "./element";
 import { isTag } from "./tag";
 import { isTemplateValue } from "./templateValue";
 import { EmptyAttribute } from "./tagToString";
 
 
-const placeholderName = ( i ) => `##PLACEHOLDER-${i}##`;
+const placeholderName = ( i: number ) => `##PLACEHOLDER-${i}##`;
 const placeholderRegex = /##PLACEHOLDER-(\d+)##/g;
-
-
-/**
- * Tokenizer extension that hooks closing-tag validation while delegating
- * all other events to htmlparser2 callbacks.
- * @internal
- */
-class TokenizerExt extends Tokenizer {
-
-    constructor(
-        options: {
-            xmlMode?: boolean;
-            decodeEntities?: boolean;
-            checkClosingTag: ( name: string ) => void; 
-        },
-        cbs: /*Callbacks*/ any
-    ) {
-        super( options, {
-            onattribdata: cbs.onattribdata.bind( cbs ),
-            onattribend: cbs.onattribend.bind( cbs ),
-            onattribname: cbs.onattribname.bind( cbs ),
-            oncdata: cbs.oncdata.bind( cbs ),
-            // onclosetag: cbs.onclosetag.bind( cbs ),
-            oncomment: cbs.oncomment.bind( cbs ),
-            ondeclaration: cbs.ondeclaration.bind( cbs ),
-            onend: cbs.onend.bind( cbs ),
-            onerror: cbs.onerror.bind( cbs ),
-            onopentagend: cbs.onopentagend.bind( cbs ),
-            onopentagname: cbs.onopentagname.bind( cbs ),
-            onprocessinginstruction: cbs.onprocessinginstruction.bind( cbs ),
-            onselfclosingtag: cbs.onselfclosingtag.bind( cbs ),
-            ontext: cbs.ontext.bind( cbs ),
-
-            onclosetag: ( name: string ) => {
-                options.checkClosingTag( name );
-                cbs.onclosetag( name );
-            }
-        } );
-    }
-}
 
 
 /**
@@ -60,6 +20,7 @@ class HtmlParser {
     private isParsingOpeningTag = false;
     private placeholdersLookup: _.Dictionary<any> = {};
     private parser: Parser;
+    private tagStack: string[] = []; // Track open tags for validation
 
     
     constructor() {
@@ -69,6 +30,7 @@ class HtmlParser {
                     //console.log( "reset" );
                     this.elementsStack = [new TemplateElement( "#root" )];
                     this.isParsingOpeningTag = false;
+                    this.tagStack = [];
                 },
 
                 onend: () => {
@@ -87,6 +49,7 @@ class HtmlParser {
                     const element = new TemplateElement( name );
                     this.elementsStack[0].appendChild( element );
                     this.elementsStack.unshift( element );
+                    this.tagStack.unshift( name );
                 },
 
                 onattribute: ( name, value, quote ) => {
@@ -130,12 +93,17 @@ class HtmlParser {
                     this.isParsingOpeningTag = false;
                 },
 
-                onclosetag: ( text: string ) => {
-                    // console.log( "closetag", text );
-                    const element = this.elementsStack.shift();
-                    // if ( element.tag !== text ) {
-                    //     throw new Error( `Closing tag </${text}> doesn't match opening tag <${element.tag}>.` );
-                    // }
+                onclosetag: ( name: string, isImplied: boolean ) => {
+                    // console.log( "closetag", name, "current element:", this.elementsStack[0]?.tag );
+                    // Check if the closing tag matches the currently open tag
+                    if ( this.tagStack.length > 0 ) {
+                        const currentTag = this.tagStack[0];
+                        if ( currentTag !== name ) {
+                            throw new Error( `Closing tag </${name}> doesn't match opening tag <${currentTag}>.` );
+                        }
+                        this.tagStack.shift();
+                    }
+                    this.elementsStack.shift();
                 },
 
                 ontext: ( text: string ) => {
@@ -168,8 +136,6 @@ class HtmlParser {
                 lowerCaseAttributeNames: false,
                 recognizeSelfClosing: true,
                 decodeEntities: false,
-                Tokenizer: TokenizerExt,
-                checkClosingTag: this.checkClosingTag.bind( this ),
             } as ParserOptions
         );
         
@@ -182,13 +148,52 @@ class HtmlParser {
      * @param html Raw HTML markup
      */
     parseComplete( html: string ): TemplateElement[] {
-        this.parser.parseComplete( html );
+        this.validateAndParseHTML( html );
         
         if ( this.isParsingOpeningTag ) {
             throw Error( "Malformed document" );
         }
         
         return this.elementsStack[0].children as TemplateElement[]
+    }
+
+    /**
+     * Validate and parse HTML, checking for mismatched closing tags.
+     * @param html Raw HTML markup
+     */
+    private validateAndParseHTML( html: string ): void {
+        // Extract all tags from the HTML and validate tag nesting
+        // Handles opening, closing, and self-closing tags
+        const tagRegex = /(<\/?)([\w\-]+)([^>]*?)(\/?)>/g;
+        let tagMatch: string[];
+        const tagStack: string[] = [];
+        
+        while ( (tagMatch = tagRegex.exec( html )) !== null ) {
+            const isClosing = tagMatch[1] === '</';
+            const tagName = tagMatch[2];
+            const isSelfClosing = tagMatch[4] === '/' || tagMatch[3].includes('/');
+            
+            if ( isClosing ) {
+                // This is a closing tag
+                if ( tagStack.length === 0 ) {
+                    throw new Error( `Closing tag </${tagName}> without matching opening tag.` );
+                }
+                const lastOpenTag = tagStack[tagStack.length - 1];
+                if ( lastOpenTag !== tagName ) {
+                    throw new Error( `Closing tag </${tagName}> doesn't match opening tag <${lastOpenTag}>.` );
+                }
+                tagStack.pop();
+            } else if ( isSelfClosing ) {
+                // This is a self-closing tag, don't push to stack
+                // Do nothing - it closes itself
+            } else {
+                // This is an opening tag
+                tagStack.push( tagName );
+            }
+        }
+        
+        // Now parse normally
+        this.parser.parseComplete( html );
     }
 
 
@@ -268,17 +273,6 @@ class HtmlParser {
             }
         } else {
             this.parser.write( placeholder.toString() );
-        }
-    }
-
-
-    /**
-     * Validate closing tag name to catch malformed markup early.
-     */
-    private checkClosingTag( name: string ) {
-        const element = this.elementsStack[0];
-        if ( element.tag !== name ) {
-            throw new Error( `Closing tag </${name}> doesn't match opening tag <${element.tag}>.` );
         }
     }
     

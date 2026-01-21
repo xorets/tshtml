@@ -79,9 +79,48 @@ describe( "parser", () => {
             const { html } = require( "../../src/index" );
             const part1 = "Hello";
             const part2 = "World";
-            const result = parseHtml( html`<p>${part1} ${part2}</p>` );
+            const result = html`<p>${part1} ${part2}</p>`;
             expect( result ).toBeDefined();
             expect( result.length ).toBeGreaterThan( 0 );
+        } );
+
+        describe( "entity handling:", () => {
+
+            it( "should preserve HTML entities in text", function() {
+                expect( parseHtml( "<p>&lt;&gt;&amp;</p>" ) as any )
+                    .toEqual( [tag( "p", "&lt;&gt;&amp;" )] );
+            } );
+
+            it( "should preserve numeric entities in text", function() {
+                expect( parseHtml( "<p>&#60;&#62;&#38;</p>" ) as any )
+                    .toEqual( [tag( "p", "&#60;&#62;&#38;" )] );
+            } );
+
+            it( "should preserve hex entities in text", function() {
+                expect( parseHtml( "<p>&#x3C;&#x3E;&#x26;</p>" ) as any )
+                    .toEqual( [tag( "p", "&#x3C;&#x3E;&#x26;" )] );
+            } );
+
+            it( "should preserve entities in attributes", function() {
+                expect( parseHtml( "<p title='&lt;test&gt;'>Content</p>" ) as any )
+                    .toEqual( [tag( "p", { "title": "&lt;test&gt;" }, "Content" )] );
+            } );
+
+            it( "should preserve named entities like &nbsp;", function() {
+                expect( parseHtml( "<p>word&nbsp;space</p>" ) as any )
+                    .toEqual( [tag( "p", "word&nbsp;space" )] );
+            } );
+
+            it( "should handle mixed entities and text", function() {
+                expect( parseHtml( "<p>Text &lt;with&gt; entities &amp; more</p>" ) as any )
+                    .toEqual( [tag( "p", "Text &lt;with&gt; entities &amp; more" )] );
+            } );
+
+            it( "should preserve entities in nested elements", function() {
+                expect( parseHtml( "<div><span>&lt;nested&gt;</span></div>" ) as any )
+                    .toEqual( [tag( "div", tag( "span", "&lt;nested&gt;" ) )] );
+            } );
+
         } );
 
     })
