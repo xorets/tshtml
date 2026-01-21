@@ -20,7 +20,7 @@ The monorepo uses **GitHub Actions** to automate:
 
 ## Workflow Files
 
-Two GitHub Actions workflow files control the process:
+Three GitHub Actions workflow files control the process:
 
 ### 1. `.github/workflows/ci.yml` - Continuous Integration
 
@@ -61,6 +61,22 @@ After the Version PR is merged, the workflow:
 3. Publishes packages to npm (via Changesets)
 
 **Important**: Publish only happens after Version PR merge. You control the timing.
+
+### 3. `.github/workflows/docs.yml` - Documentation Deployment
+
+**Triggers**: Runs on pushes to `main` when changes touch:
+- Source files in `tshtml/src/**`
+- `tshtml/package.json`
+- Documentation in `docs/**`
+- The docs workflow file itself
+- Can also be manually triggered via `workflow_dispatch`
+
+**What it does**:
+1. Builds TypeDoc documentation (`npm run docs`)
+2. Uploads documentation artifacts to GitHub Pages
+3. Deploys to https://xorets.github.io/tshtml/
+
+**Status**: Documentation is automatically updated on every push to `main` that affects source code or docs.
 
 ## Local Development (Recommended)
 
