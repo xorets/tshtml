@@ -1,4 +1,4 @@
-import { EmptyAttribute, html, tag, tagToString } from "../../src";
+import { EmptyAttribute, html, tag, tagToString } from "../../src/index";
 
 describe( "HTML generator", () => {
 
@@ -49,5 +49,25 @@ describe( "HTML generator", () => {
             .toEqual( `<custom first="true" second="false"></custom><custom first="true" second="false"></custom>` );
     } );
     
+    it( "should render style objects as style attribute", () => {
+        expect( tagToString( tag( "div", { style: { color: "red", fontSize: "14px" } } ) ) )
+            .toContain( "style=" );
+        expect( tagToString( tag( "div", { style: { color: "red", fontSize: "14px" } } ) ) )
+            .toContain( "color:red" );
+    } );
+
+    it( "should handle null elements in array", () => {
+        expect( tagToString( [
+            tag( "div", "content" ),
+            null as any,
+            tag( "span", "more" )
+        ] ) ).toEqual( `<div>content</div><span>more</span>` );
+    } );
+
+    it( "should handle TemplateValue properties", () => {
+        const { cssClass } = require( "../../src/index" );
+        expect( tagToString( tag( "div", { class: cssClass( "red blue" ) } ) ) )
+            .toContain( "class=" );
+    } );
 
 } );

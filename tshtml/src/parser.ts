@@ -10,6 +10,11 @@ const placeholderName = ( i ) => `##PLACEHOLDER-${i}##`;
 const placeholderRegex = /##PLACEHOLDER-(\d+)##/g;
 
 
+/**
+ * Tokenizer extension that hooks closing-tag validation while delegating
+ * all other events to htmlparser2 callbacks.
+ * @internal
+ */
 class TokenizerExt extends Tokenizer {
 
     constructor(
@@ -45,6 +50,10 @@ class TokenizerExt extends Tokenizer {
 }
 
 
+/**
+ * Stateful HTML parser that can convert raw HTML or template literals with placeholders
+ * into TemplateElement trees. Handles placeholder substitution inside tag bodies and text.
+ */
 class HtmlParser {
 
     public elementsStack: TemplateElement[];
@@ -168,6 +177,10 @@ class HtmlParser {
     }
     
     
+    /**
+     * Parse a full HTML string into a list of TemplateElements.
+     * @param html Raw HTML markup
+     */
     parseComplete( html: string ): TemplateElement[] {
         this.parser.parseComplete( html );
         
@@ -179,6 +192,11 @@ class HtmlParser {
     }
 
 
+    /**
+     * Parse a tagged template literal `html`...`` capturing placeholders as nodes/values.
+     * @param literals Template literal chunks
+     * @param placeholders Values interpolated between literal chunks
+     */
     parseStringLiteral( literals: TemplateStringsArray, ...placeholders: any[] ): TemplateItem[] {
         for ( let i = 0; i < literals.length - 1; i++ ) {
             this.parser.write( literals[i] );
@@ -227,6 +245,9 @@ class HtmlParser {
     }
 
 
+    /**
+     * Append a placeholder value appropriately as text, element, TemplateValue, or nested array.
+     */
     private appendPlaceholder( placeholder: any ) {
         // Skip empty placeholders
         if ( placeholder == null )
@@ -251,6 +272,9 @@ class HtmlParser {
     }
 
 
+    /**
+     * Validate closing tag name to catch malformed markup early.
+     */
     private checkClosingTag( name: string ) {
         const element = this.elementsStack[0];
         if ( element.tag !== name ) {
@@ -262,8 +286,9 @@ class HtmlParser {
 
 
 /**
- *
- * @param html
+ * Parse raw HTML string into TemplateElement array.
+ * @param html Raw HTML markup to parse
+ * @returns Parsed elements
  */
 export function parseHtml( html: string ): TemplateElement[] {
     return new HtmlParser().parseComplete( html );
@@ -271,15 +296,23 @@ export function parseHtml( html: string ): TemplateElement[] {
 
 
 /**
- *
- * @param literals
- * @param placeholders
+ * Tagged template helper to parse HTML with embedded placeholders.
+ * @param literals Template literal chunks
+ * @param placeholders Values inserted between chunks
+ * @returns Parsed template items (elements/text)
  */
 export function html( literals: TemplateStringsArray, ...placeholders: any[] ): TemplateItem[] {
     return new HtmlParser().parseStringLiteral( literals, ...placeholders );
 }
 
 
+/**
+ * Parse a tagged template literal and ensure exactly one HTML element is produced.
+ * Throws if multiple elements or non-element nodes are produced.
+ * @param literals Template literal chunks
+ * @param placeholders Values inserted between chunks
+ * @returns Single TemplateElement
+ */
 export function htmlEl( literals: TemplateStringsArray, ...placeholders: any[] ): TemplateElement {
     const parsed = new HtmlParser().parseStringLiteral( literals, ...placeholders );
     

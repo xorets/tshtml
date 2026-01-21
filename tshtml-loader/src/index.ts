@@ -5,12 +5,16 @@ import { dirname } from "path";
 import { Script } from "vm";
 import * as webpack from "webpack";
 import { isTag, tagToString } from "tshtml";
-
-require("tsconfig-paths/register"); // Necessary to support @folders resolution by Nodejs
 const Module = require("module");
 
 // ----------------------------------------------------------------------------------
 // tshtml-loader implementation
+/**
+ * Webpack loader entry point for .tshtml files. Executes the template code and
+ * returns compiled HTML while registering file dependencies with webpack.
+ * @param this Loader context provided by webpack
+ * @param source Raw .tshtml source code
+ */
 export default function (this: webpack.LoaderContext<any>, source: string) {
     let result: { exports: any; dependencies: string[] };
     let htmlResult: string;
@@ -18,7 +22,7 @@ export default function (this: webpack.LoaderContext<any>, source: string) {
     try {
         result = executeTemplate(source, this.resourcePath);
         builder = result.exports.default;
-    } catch (error) {
+    } catch (error: any) {
         throw new Error(`Error executing template: ${error.message}\n ${error.stack}`);
     }
 
@@ -42,7 +46,7 @@ export default function (this: webpack.LoaderContext<any>, source: string) {
         const rawRequest = this._module.rawRequest;
         const request = rawRequest.substring(0, rawRequest.lastIndexOf("?"));
 
-        // postpone to a later event, because when loader is invoked, the chunks don’t yet exist, and we need to register the file
+        // postpone to a later event, because when loader is invoked, the chunks don't yet exist, and we need to register the file
         compilation.hooks.processAssets.tap({
             name: "tshtml-loader",
             stage: webpack.Compilation.PROCESS_ASSETS_STAGE_PRE_PROCESS
@@ -51,13 +55,18 @@ export default function (this: webpack.LoaderContext<any>, source: string) {
             compilation.addChunk("resource").files.add(request);
         });
     }
-
     return htmlResult;
 }
 
 // ----------------------------------------------------------------------------------
 //
 
+/**
+ * Compile and execute a .tshtml template in an isolated VM context while
+ * tracking all file dependencies loaded via require().
+ * @param code Template source
+ * @param fileName Absolute path of the template file (used for resolution)
+ */
 export function executeTemplate(code: string, fileName: string) {
     const dirName = dirname(fileName);
 
@@ -91,8 +100,15 @@ export function executeTemplate(code: string, fileName: string) {
 }
 
 
+/**
+ * Convert different template builder outputs into a final HTML string.
+ * Accepts strings, class constructors (invoked), tshtml tags/arrays, or objects with toString().
+ */
 export function templateToString(builder: any): string {
-    if (isString(builder)) {
+    if (builder == null) {
+        return "";
+
+    } else if (isString(builder)) {
         return builder;
 
     } else if (typeof (builder) == "function") {
@@ -114,14 +130,20 @@ let compilerService: Service;
  * @param code
  * @param fileName
  */
+/**
+ * Compile TypeScript source using ts-node with Node16 settings.
+ * @param code Source code
+ * @param fileName File name used for source maps and module resolution
+ */
 function compileCode(code: string, fileName: string) {
     const tsFileName = `${fileName}.ts`;
 
     if (compilerService == null) {
         compilerService = register({
             compilerOptions: {
-                module: "CommonJS",
-                target: "es2015",
+                module: "Node16",
+                target: "es2022",
+                moduleResolution: "node16",
             },
         });
     }
@@ -147,6 +169,10 @@ interface ModuleInfo extends NodeJS.Module {
 /***
  * Create a logging wrapper for "require" function.
  * @param fileName
+ */
+/**
+ * Wrap Node's require to track dependency files and evict stale modules when underlying files change.
+ * @param fileName The template file being executed
  */
 function createRequireService(fileName: string) {
     const req = Module.createRequire(fileName);

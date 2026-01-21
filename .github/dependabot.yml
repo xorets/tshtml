@@ -1,0 +1,41 @@
+version: 2
+updates:
+  # NPM dependency updates
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "andrew-mayorov"
+    labels:
+      - "dependencies"
+      - "npm"
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+    allow:
+      - dependency-type: "direct"
+    ignore:
+      # Ignore major version updates - review manually
+      - dependency-name: "@angular/*"
+        update-types: ["version-update:semver-major"]
+
+  # GitHub Actions updates
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "andrew-mayorov"
+    labels:
+      - "ci"
+      - "github-actions"
+    commit-message:
+      prefix: "ci"

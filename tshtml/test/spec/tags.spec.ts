@@ -1,4 +1,4 @@
-import { html, div, a, span, tag } from "../../src";
+import { html, div, a, span, tag } from "../../src/index";
 
 describe( "tag helpers", () => {
 

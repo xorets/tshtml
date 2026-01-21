@@ -1,4 +1,4 @@
-﻿import { EmptyAttribute, transformAttrs } from "../../src";
+﻿import { EmptyAttribute, transformAttrs } from "../../src/index";
 
 
 describe( "transformAttrs", () => {

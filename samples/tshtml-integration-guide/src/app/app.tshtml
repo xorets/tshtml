@@ -1,0 +1,35 @@
+import { html } from 'tshtml';
+
+const buildTime = new Date().toISOString();
+const items = ['TypeScript Templates', 'Build-time Rendering', 'HTML Generation'];
+
+export default html`
+  <div class="container">
+    <h1>Welcome to tshtml!</h1>
+    <p class="subtitle">TypeScript-first HTML template language</p>
+
+    <div class="info-card">
+      <h2>Integration Guide Demo</h2>
+      <p>This template was successfully generated using <strong>tshtml</strong> at build time.</p>
+      <p><small>Build timestamp: ${buildTime}</small></p>
+      <p><small>Runtime (Angular binding): {{ now }}</small></p>
+    </div>
+
+    <div class="features">
+      <h3>Features Used:</h3>
+      <ul>
+        ${items.map(item => html`<li>${item}</li>`)}
+      </ul>
+    </div>
+
+    <div class="instructions">
+      <h3>What to do next:</h3>
+      <ol>
+        <li>Modify <code>src/app/app.tshtml</code> to customize this template</li>
+        <li>Add more <code>.tshtml</code> files for other components</li>
+        <li>Use the <code>html</code> function to compose templates programmatically</li>
+        <li>Check the <a href="https://github.com/xorets/tshtml">tshtml documentation</a> for more examples</li>
+      </ol>
+    </div>
+  </div>
+`;

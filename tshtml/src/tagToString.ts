@@ -15,7 +15,10 @@ import { isTemplateValue } from "./templateValue";
 //
 
 /**
- * If an attribute has this value, then it will be emitted as attribute w/o value in the resulting HTML.
+ * Symbol marker to emit an attribute without a value (e.g., disabled, readonly).
+ * @example
+ * // Renders as: <input disabled>
+ * tag('input', { disabled: EmptyAttribute })
  */
 export const EmptyAttribute = Symbol();
 
@@ -24,11 +27,34 @@ export const EmptyAttribute = Symbol();
 //
 const EMPTY_HTML_ELEMENTS = ["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"];
 
-/***
- * Converts ITemplateFragment subtree (or array of subtrees) to HTML string.
- * @param elements
+/**
+ * Converts HTML template fragments to an HTML string.
+ * Handles rendering of TemplateElements, text nodes, TemplateValues, and nested structures.
+ * 
+ * @param {...(TemplateFragment | TemplateFragment[])[]} elements - One or more fragments to render
+ * @returns {string} The HTML string representation of the fragments
+ * 
+ * @example
+ * ```typescript
+ * import { tag, tagToString } from 'tshtml';
+ * 
+ * const element = tag('div', { class: 'container' },
+ *     tag('h1', 'Title'),
+ *     tag('p', 'Content')
+ * );
+ * 
+ * const html = tagToString(element);
+ * // '<div class="container"><h1>Title</h1><p>Content</p></div>'
+ * 
+ * // Multiple elements
+ * const multi = tagToString(
+ *     tag('p', 'First'),
+ *     tag('p', 'Second')
+ * );
+ * // '<p>First</p><p>Second</p>'
+ * ```
  */
-export function tagToString( ...elements: (TemplateFragment | TemplateFragment[])[] ) {
+export function tagToString( ...elements: (TemplateFragment | TemplateFragment[])[] ): string {
 
     return map( elements, x => renderElement( x ) ).join( "" );
     

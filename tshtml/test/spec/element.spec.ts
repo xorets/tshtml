@@ -1,4 +1,4 @@
-import { CssClassValue, TemplateElement } from "../../src";
+import { CssClassValue, TemplateElement } from "../../src/index";
 
 describe( "TemplateElement", () => {
     
@@ -32,6 +32,26 @@ describe( "TemplateElement", () => {
         const el = new TemplateElement( "test" );
         expect( el.class instanceof CssClassValue ).toBeTruthy();
         expect( el.class.value ).toEqual( [] );
+    } );
+    
+    it( "appendChild should accept string with HTML markup and parse it", () => {
+        const el = new TemplateElement( "div" );
+        el.appendChild( "<p>Hello</p>" );
+        expect( el.children.length ).toBeGreaterThan( 0 );
+        expect( el.children[0] instanceof TemplateElement ).toBeTruthy();
+    } );
+
+    it( "appendChild should accept plain string without HTML", () => {
+        const el = new TemplateElement( "div" );
+        el.appendChild( "Hello" );
+        expect( el.children ).toContain( "Hello" );
+    } );
+
+    it( "appendChild should accept non-string elements", () => {
+        const el = new TemplateElement( "div" );
+        const child = new TemplateElement( "p" );
+        el.appendChild( child );
+        expect( el.children ).toContain( child );
     } );
     
 } );

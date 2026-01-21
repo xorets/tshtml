@@ -1,0 +1,24 @@
+{
+  "extension": [
+    ".ts"
+  ],
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "**/*.spec.ts",
+    "**/*.d.ts",
+    "**/export-template.*",
+    "node_modules"
+  ],
+  "reporter": [
+    "text",
+    "html",
+    "lcov",
+    "json"
+  ],
+  "report-dir": "./coverage",
+  "temp-dir": "./.nyc_output",
+  "all": true,
+  "check-coverage": false
+}

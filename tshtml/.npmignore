@@ -1,0 +1,8 @@
+src/
+test/
+coverage/
+.nycrc
+*.d.ts.map
+tsconfig.json
+node_modules/
+*.md

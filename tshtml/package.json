@@ -1,27 +1,51 @@
 {
-  "version": "1.3.0",
-  "description": "",
+  "version": "1.4.0",
+  "description": "TypeScript HTML template engine",
   "name": "tshtml",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -b tsconfig.json",
     "build-watch": "tsc -b tsconfig.json -w",
-    "test": "node ./test/jasmine",
-    "build-docs": "typedoc ./src/index.ts --out ../docs/typedoc"
+    "test": "tsx ./test/jasmine.js",
+    "coverage": "nyc tsx ./test/jasmine.js",
+    "build-docs": "typedoc ./src/index.ts --out ../docs/typedoc",
+    "prepublishOnly": "npm run test && npm run build"
   },
   "author": "LOGEX Group",
   "license": "MIT",
   "devDependencies": {
-    "@types/jasmine": "5.1.7",
+    "@types/jasmine": "^5.1.7",
     "@types/lodash": "4.17.15",
+    "diff": "^8.0.3",
     "jasmine": "5.6.0",
-    "typedoc": "0.27.8"
+    "nyc": "^17.1.0",
+    "tsx": "^4.21.0",
+    "typedoc": "0.28.16"
   },
   "dependencies": {
     "htmlparser2": "^7.2.0",
     "lodash": "^4.17.21",
     "ts-node": "^10.9.2",
-    "typescript": "5.7.3"
+    "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "diff": "^8.0.3"
   }
 }

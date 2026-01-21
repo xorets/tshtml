@@ -1,4 +1,4 @@
-import { EmptyAttribute, parseHtml, tag } from "../../src";
+import { EmptyAttribute, parseHtml, tag } from "../../src/index";
 
 describe( "parser", () => {
 
@@ -73,6 +73,15 @@ describe( "parser", () => {
                         <span>After</span>
                     </outer>` ) )
                 .toThrow();
+        } );
+
+        it( "should handle multiple placeholders in template", function() {
+            const { html } = require( "../../src/index" );
+            const part1 = "Hello";
+            const part2 = "World";
+            const result = parseHtml( html`<p>${part1} ${part2}</p>` );
+            expect( result ).toBeDefined();
+            expect( result.length ).toBeGreaterThan( 0 );
         } );
 
     })

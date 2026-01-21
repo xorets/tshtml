@@ -2,11 +2,13 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "ES2015",
-    "outDir": "./lib",
+    "outDir": "./dist",
     "declaration": true,
     "declarationMap": true,
     "sourceMap": false,
     "esModuleInterop": true,
+    "skipLibCheck": true,
+    "moduleResolution": "node",
     "lib": [
       "es2017",
       "dom"

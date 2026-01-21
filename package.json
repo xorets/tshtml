@@ -1,0 +1,41 @@
+{
+  "name": "tshtml-monorepo",
+  "version": "1.0.0",
+  "description": "TypeScript HTML template engine with webpack loader support",
+  "private": true,
+  "scripts": {
+    "build": "npm run build -w tshtml && npm run build -w tshtml-loader",
+    "build-watch": "npm run build-watch -w tshtml",
+    "test": "npm run test -w tshtml && npm run test -w tshtml-loader",
+    "test:watch": "npm run test -w tshtml -- --watch",
+    "coverage": "npm run coverage -w tshtml && npm run coverage -w tshtml-loader",
+    "coverage:report": "npm run coverage && open coverage/index.html",
+    "clean": "rimraf tshtml/dist tshtml-loader/dist tshtml/coverage tshtml-loader/coverage .nyc_output coverage dist",
+    "link": "cd tshtml && npm link && cd ../tshtml-loader && npm link tshtml && npm link && cd ..",
+    "unlink": "cd tshtml && npm unlink --global && cd ../tshtml-loader && npm unlink --global && cd ..",
+    "pack": "npm run build && rimraf dist && mkdir dist && cd tshtml && npm pack && move tshtml-*.tgz ../dist && cd ../tshtml-loader && npm pack && move tshtml-loader-*.tgz ../dist && cd ..",
+    "lint": "echo 'No linter configured yet'",
+    "docs": "npm run build-docs -w tshtml",
+    "release": "changeset publish"
+  },
+  "workspaces": [
+    "tshtml",
+    "tshtml-loader"
+  ],
+  "keywords": [
+    "typescript",
+    "html",
+    "template",
+    "webpack",
+    "loader"
+  ],
+  "author": "LOGEX Group",
+  "license": "MIT",
+  "devDependencies": {
+    "@changesets/cli": "^2.29.8",
+    "rimraf": "^6.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

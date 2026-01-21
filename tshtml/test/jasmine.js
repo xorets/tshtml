@@ -1,10 +1,7 @@
-require( "ts-node" ).register( {
-    compilerOptions: {
-        module: "CommonJS",
-    }
-} );
+// ts-node is already registered via --require in package.json test script
+// No need to register again here
 
-const Jasmine = require( "jasmine" );
+const Jasmine = require("jasmine");
 const jasmine = new Jasmine();
 
 jasmine.loadConfig(

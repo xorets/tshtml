@@ -5,152 +5,51 @@
 npm i tshtml tshtml-loader
 ```
 
+## Documentation
+- **[Angular 21 Integration Guide](docs/angular-21-integration.md)** — Step-by-step guide to add tshtml to an Angular 21 project
+- **[User Guide](docs/user-guide.md)** — Template authoring, API reference, and examples  
+- **[Development Guide](docs/development.md)** — Repository structure, contributing, and development setup
+- **[API Reference](docs/typedoc/index.html)** — Complete TypeScript API documentation
+
 
 ## What is it?
-tshtml-file is a TypeScript template that emits HTML code during build-time.
-The simplest one could look like this:
+tshtml is a TypeScript template system that generates HTML at **build time**, not at runtime. Templates are written as TypeScript code and executed during the webpack build process, producing static HTML that becomes part of your Angular components.
 
-```
+The simplest template could look like this:
+
+```typescript
 // test.tshtml
 
 export default `<p>Hello world!</p>`;
 ```
-Obviosly this does not differ much from a static HTML file with the same paragraph. 
-But now you can start write code in the template, just like this:
 
-```
+Obviously this does not differ much from a static HTML file with the same paragraph. 
+But now you can write code in the template:
+
+```typescript
 export default `
     <p>Hello world!</p>
     <p>Build time is ${Date()}.</p>`;
 ```
 
-This code is executed at build time, and only the resulting 
-HTML will be fed to Angular. This way we produce just the same fast Angular templates,
-but with help of possible very sophisticated code in tshtml.
-So, it's a lovely little metaprogramming: code that creates code.
+**Important**: This code is executed at build time only. The resulting HTML is static and fed to Angular. There's no runtime overhead—you get the same fast Angular templates, but generated through TypeScript metaprogramming.
 
-You can write helper functions to extract repetitive patterns of template code,
-import constants and static data structures used at run time to generate some
-template elements out of them, and also create templates that inherit other templates.
-The latter is very handy when you have Angular components derived from some
-base components.
+## When to Use tshtml
 
-## _html_ function
-Combining HTML by hands is not very pleasant task. You must ensure that it is well-formed
-so usually it requires more efforts than just to concatenate strings together. 
+tshtml excels in three main scenarios:
 
-To simplify this task we created `html` function. It parses the text into a 
-tree of node-like objects that can be later serialized to a well-formed HTML.
-Since the tree is just a graph of plain JavaScript objects, you can update it:
-change attributes, add new children and so on.
+1. **Template Inheritance** - Solve Angular's limitation where components inherit behavior but not templates. Use standard OOP class inheritance for templates.
 
-The simplest example with `html` added looks basically the same:
-```
-import { html } from "tshtml";
+2. **Reusable Markup Helpers** - Create functions that generate complex HTML structures and Angular components based on parameters.
 
-export default html`<p>Hello world!</p>`;
-```
+3. **Lightweight Components** - Replace components that only provide markup with faster build-time generated templates.
 
-Let's combine two HTML trees together:
-```
-import { html } from "tshtml";
+**[See detailed use cases and examples →](docs/index.md#when-to-use-tshtml)**
 
-const buildTime = html`<p>Build time is ${Date()}.</p>`;
+## Learn more
 
-// Resulting tree has buildTime subtree inserted at the appropriate place
-const res = html`
-    <p>Hello world!</p>
-    ${buildTime}`;
-    
-// Tree of template elements will be converted to string by the loader
-export default res;    
-```
-
-Here `builtTime` is not a string, it's an object, but you can still use standard
-template string placeholder syntax to combine HTML fragments together.
-
-The tree can be manipulated using methods of `TemplateItem` class. 
-```
-import { htmlEl } from "tshtml";
-
-const res = htmlEl`<p>Hello world!</p>`;
-
-// Add an attribute
-res.attrs( { "color": "red } );
-
-export default res; 
-```
-
-## To use in your Angular project
-First, configure Angular build as described here: 
-https://codeburst.io/customizing-angular-cli-6-build-an-alternative-to-ng-eject-a48304cd3b21
-
-For that you need to install necessary packages:
-```
-npm install @angular-devkit/build-angular --save-dev
-npm install @angular-builders/custom-webpack --save-dev
-```
-Add "architect" section to the "angular.json" if it is not already there. Change
-builder configuration and specify the name of additional webpack config file:
-```
-"architect": {
-    "build": {
-        "builder": "@angular-builders/custom-webpack:browser",
-        "options": {
-        "customWebpackConfig": {
-            "path": "./extra-webpack.config.js",
-            "replaceDuplicatePlugins": true
-        },
-        ...
-    },
-    "serve": {
-        "builder": "@angular-builders/custom-webpack:dev-server",
-        ...
-```
-
-Add `extra-webpack.config.js`:
-```
-module.exports = {
-    module: {
-        rules: [
-            {
-                test: /\.tshtml$/,
-                use: ["tshtml-loader"],
-                enforce: "pre"
-            },
-        ]
-    }
-};
-```
-
-You also need to have "tshtml" and  "tshtml-loader" packages in your project.
-
-Finally you just use tshtml-files instead of html-files in your Angular components.
-
-
-## Library development
-
-In tshtml folder:
-```
-npm run test
-npm run build
-```
-
-### Debugging
-
-If you need to debug the tests, then you can do the following:
-
-1. In the console where you are going to execute tests set environment variable:
-`set-item env:NODE_OPTIONS "--inspect"`
-   
-1. Configure you debugger to attach to Node.js at port 9229. Start the debugger
-
-1. Start test: `node ./test/jasmine "TEST NAME"`
-
-### tshtml-loader
-
-In tshtml-loader folder:
-```
-npm run build
-```
+- Template authoring and APIs: [docs/user-guide.md](docs/user-guide.md)
+- Angular integration: [docs/angular-21-integration.md](docs/angular-21-integration.md)
+- Development / contributing: [docs/development.md](docs/development.md)
+- CI/CD, Changesets, publishing: [docs/github-workflows.md](docs/github-workflows.md)
 
