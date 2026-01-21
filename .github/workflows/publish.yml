@@ -19,6 +19,9 @@ jobs:
   changeset:
     name: Create Release PR
     runs-on: ubuntu-latest
+    env:
+      # Enable npm trusted publishing via OIDC (no token needed)
+      NPM_CONFIG_PROVENANCE: true
     outputs:
       published: ${{ steps.changesets.outputs.published }}
       publishedPackages: ${{ steps.changesets.outputs.publishedPackages }}
