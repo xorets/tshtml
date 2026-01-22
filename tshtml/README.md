@@ -1,8 +1,8 @@
 # tshtml
 
-**Build-time TypeScript HTML template engine for Angular**
+**TypeScript-authored Angular templates (compiled at build time)**
 
-Write HTML templates as TypeScript code that executes during webpack build, generating static HTML for your Angular components. Get the full power of TypeScript metaprogramming with zero runtime overhead.
+Write Angular templates as TypeScript modules executed during the webpack build. The output is a template string that can include Angular bindings/directives (runtime), while TypeScript helps you compose and share markup (build time).
 
 ## Why tshtml?
 
@@ -15,13 +15,15 @@ Write HTML templates as TypeScript code that executes during webpack build, gene
 
 ```typescript
 // hello.tshtml
-export default `
-    <h1>Hello, ${process.env.APP_NAME}!</h1>
-    <p>Built at: ${new Date().toISOString()}</p>
+import { html } from 'tshtml';
+
+export default html`
+    <h1>Hello {{ userName }}</h1>
+    <p *ngIf="isAdmin">Admin mode</p>
 `;
 ```
 
-This TypeScript code runs during webpack build and produces static HTML that Angular components consume.
+This TypeScript module runs during the webpack build and produces an Angular template string.
 
 ## Installation
 

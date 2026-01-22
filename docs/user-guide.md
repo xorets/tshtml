@@ -1,13 +1,21 @@
 # tshtml User Guide
 
 ## What is tshtml?
-tshtml is a TypeScript template system that generates HTML at **build time**, not at runtime:
+tshtml is a TypeScript-first way to author **Angular templates**.
 
-- Templates are written as TypeScript code and executed during the webpack build process
-- The resulting HTML is static and becomes part of your Angular components
+In Angular projects, `.tshtml` files are executed at **build time** to produce a template string. That output is usually an Angular template (with bindings/directives), and Angular still evaluates those bindings at **runtime**.
+
+- Templates are written as TypeScript modules and executed during the webpack build process
+- The output becomes the template string used by your Angular components
 - Ships with a webpack loader (`tshtml-loader`) that turns `.tshtml` files into HTML
 - Provides a small runtime API (`tag`, `html`, `cssClass`, `expr`, etc.) for programmatic template generation
-- **No runtime template execution**: template logic executes at build time
+
+### Build-time vs runtime: the important mental model
+
+- TypeScript interpolation (`${ ... }`) runs at **build time** (when webpack executes the module).
+- Angular bindings (`{{ ... }}`, `*ngIf`, `*ngFor`, `[(ngModel)]`, etc.) run at **runtime** (in the browser).
+
+Most Angular usage of tshtml is: use TypeScript to *emit* Angular template syntax.
 
 ### When to Use tshtml
 
@@ -43,8 +51,8 @@ import { html } from "tshtml";
 
 export default html`
   <div class="card">
-    <h1>${"Title"}</h1>
-    <p>${"Body"}</p>
+    <h1>{{ title }}</h1>
+    <p>{{ body }}</p>
   </div>
 `;
 ```
@@ -53,16 +61,15 @@ export default html`
 ```ts
 import { html } from "tshtml";
 
-const showCta = true;
-const items = ["One", "Two"];
+const showCta = true; // build-time feature flag or config
 
 export default html`
   <section class="panel">
-    <h2>${"Dashboard"}</h2>
+    <h2>Dashboard</h2>
 
-    ${items.map(text => html`<p>${text}</p>`) }
+    <p *ngFor="let item of items">{{ item }}</p>
 
-    ${showCta ? html`<button class="primary">Continue</button>` : ""}
+    ${showCta ? html`<button class="primary" (click)="continue()">Continue</button>` : ""}
   </section>
 `;
 ```
@@ -145,7 +152,7 @@ const attrs = transformAttrs(
 ```
 
 ## Rendering to string
-At runtime (or in tests), you can render:
+If you are using tshtml outside Angular (or in tests), you can render builder output to a plain HTML string:
 ```ts
 import { tag, tagToString } from "tshtml";
 
@@ -158,6 +165,8 @@ Compile a single `.tshtml` to `.html`:
 ```bash
 npx tshtml-loader-export-template ./path/to/file.tshtml
 ```
+
+In Angular projects, you typically don’t need this CLI: Angular consumes the compiled template string produced by the webpack loader.
 
 ## Troubleshooting
 - Ensure the template exports `default`

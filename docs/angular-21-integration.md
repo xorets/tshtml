@@ -4,11 +4,13 @@ This guide explains how to modify a standard Angular 21 application to use tshtm
 
 ## What is tshtml?
 
-tshtml is a TypeScript template system that generates HTML at **build time**, not at runtime. Your templates are written as TypeScript code and executed during the webpack build process, producing static HTML that becomes part of your Angular components.
+tshtml is a TypeScript-first way to author **Angular templates**.
+
+In Angular projects, `.tshtml` files are executed at **build time** (webpack + `tshtml-loader`) to produce a **template string**. That output typically contains Angular template syntax (bindings and directives), which Angular still evaluates at **runtime**.
 
 In Angular projects, `.tshtml` typically **emits Angular template syntax** (bindings and directives) rather than rendering runtime data.
 
-**Key Point**: All template logic runs during compilation. The resulting HTML is static with no runtime overhead.
+**Key Point**: TypeScript runs during compilation to generate the template string; Angular bindings still run at runtime.
 
 ### Why Use tshtml with Angular?
 
@@ -145,9 +147,13 @@ import { html } from 'tshtml';
 export default html`
   <div class="container">
     <h1>Welcome to tshtml!</h1>
-    <p>This template was generated at build-time using TypeScript.</p>
-    <p>Build time: ${new Date().toISOString()}</p>
+    <p>This template is authored in TypeScript but rendered by Angular.</p>
+
     <p>Runtime (Angular binding): {{ now }}</p>
+
+    <ul>
+      <li *ngFor="let item of items">{{ item }}</li>
+    </ul>
   </div>
 `;
 ```
@@ -169,6 +175,7 @@ import template from './app.component.tshtml';
 export class AppComponent {
   title = 'My App';
   now = new Date().toISOString();
+  items = ['TypeScript-authored templates', 'Angular bindings', 'Template composition'];
 }
 ```
 
@@ -202,7 +209,9 @@ Your application will compile with tshtml support. Visit `http://localhost:4200`
 
 ## Advanced: Template Composition
 
-tshtml allows you to compose templates programmatically at build time. Prefer emitting Angular directives (e.g. `*ngFor`) when the data is only available at runtime.
+tshtml allows you to compose templates programmatically at build time.
+
+Prefer emitting Angular directives (e.g. `*ngFor`) when the data is only available at runtime.
 
 ```typescript
 // shared-header.tshtml
@@ -233,6 +242,12 @@ export default html`
 ```
 
 **Note**: This emits Angular template code. At runtime, Angular will render `items` (a component field) via `*ngFor`.
+
+## Build-time HTML generation (advanced)
+
+tshtml can also be used to generate static HTML at build time (for example: injecting build metadata, producing an exported `.html` file, or pre-rendering known-at-build-time content).
+
+However, the Angular integration path in this repo focuses on emitting Angular template syntax. If you want full static-site/pre-render pipelines, you will typically need additional tooling and conventions beyond the basic Angular + loader setup.
 
 ## Troubleshooting
 

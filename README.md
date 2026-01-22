@@ -13,7 +13,10 @@ npm i tshtml tshtml-loader
 
 
 ## What is it?
-tshtml is a TypeScript template system that generates HTML at **build time**, not at runtime. Templates are written as TypeScript code and executed during the webpack build process, producing static HTML that becomes part of your Angular components.
+tshtml is a TypeScript-first way to author **Angular templates**.
+
+In an Angular build, `.tshtml` files are executed at **build time** (via webpack + `tshtml-loader`) to produce a **template string**.
+That template string typically contains Angular bindings/directives (e.g. `{{ ... }}`, `*ngFor`), which Angular still evaluates at **runtime**.
 
 The simplest template could look like this:
 
@@ -24,15 +27,27 @@ export default `<p>Hello world!</p>`;
 ```
 
 Obviously this does not differ much from a static HTML file with the same paragraph. 
-But now you can write code in the template:
+But the main value is that you can **compose templates with TypeScript** while still using Angular runtime bindings.
 
 ```typescript
-export default `
-    <p>Hello world!</p>
-    <p>Build time is ${Date()}.</p>`;
+// app.component.tshtml
+import { html } from 'tshtml';
+
+// TypeScript runs at build time and can help you *emit* Angular template syntax.
+export default html`
+    <h1>Hello {{ userName }}</h1>
+
+    <ul>
+        <li *ngFor="let item of items">{{ item }}</li>
+    </ul>
+`;
 ```
 
-**Important**: This code is executed at build time only. The resulting HTML is static and fed to Angular. There's no runtime overhead—you get the same fast Angular templates, but generated through TypeScript metaprogramming.
+**Rule of thumb**
+- Use TypeScript (`${ ... }`) to generate/compose *template code*.
+- Use Angular (`{{ ... }}`, `*ngIf`, `*ngFor`, etc.) for *runtime data*.
+
+Build-time HTML generation (where you evaluate data into final HTML) is an **advanced** pattern and is not the primary focus of the Angular samples in this repo.
 
 ## When to Use tshtml
 

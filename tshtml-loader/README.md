@@ -4,20 +4,22 @@
 
 This webpack loader enables `.tshtml` template files in your Angular projects, executing TypeScript template code at build time to generate static HTML.
 
+In practice, `.tshtml` commonly emits Angular template syntax (bindings/directives). Angular still performs runtime binding; tshtml provides build-time composition.
+
 ## What It Does
 
 The tshtml-loader integrates with webpack to:
 - Process `.tshtml` files containing TypeScript template code
 - Execute templates during the build process
-- Generate static HTML output for Angular components
+- Produce a template string consumable by Angular components
 - Provide full TypeScript compilation support for template files
 
 ## Why Use It?
 
-- **Build-Time Templates** - Generate HTML during webpack build, not at runtime
+- **Build-Time Composition** - Compose templates during webpack build
 - **TypeScript Power** - Use classes, functions, imports, and type safety in templates
 - **Seamless Integration** - Works with Angular CLI and standard webpack configurations
-- **Zero Runtime Overhead** - Output is plain HTML consumed by Angular
+- **No Template Runtime** - TypeScript template logic runs at build time; Angular runtime bindings still work as usual
 
 ## Installation
 

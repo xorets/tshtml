@@ -1,7 +1,6 @@
 import { html } from 'tshtml';
 
 const buildTime = new Date().toISOString();
-const items = ['TypeScript Templates', 'Build-time Rendering', 'HTML Generation'];
 
 export default html`
   <div class="container">
@@ -10,15 +9,15 @@ export default html`
 
     <div class="info-card">
       <h2>Integration Guide Demo</h2>
-      <p>This template was successfully generated using <strong>tshtml</strong> at build time.</p>
-      <p><small>Build timestamp: ${buildTime}</small></p>
+      <p>This template is authored in <strong>TypeScript</strong> and rendered by <strong>Angular</strong>.</p>
+      <p><small>Build timestamp (optional metadata): ${buildTime}</small></p>
       <p><small>Runtime (Angular binding): {{ now }}</small></p>
     </div>
 
     <div class="features">
       <h3>Features Used:</h3>
       <ul>
-        ${items.map(item => html`<li>${item}</li>`)}
+        <li *ngFor="let item of items">{{ item }}</li>
       </ul>
     </div>
 

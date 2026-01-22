@@ -29,6 +29,8 @@ This project was created by following every step of the [Angular 21 Integration 
 
 5. **Created `app.tshtml`** template with dynamic content generation
 
+   (In this repo, the sample focuses on emitting Angular bindings/directives. TypeScript composition happens at build time; Angular renders runtime values.)
+
 6. **Updated `app.ts`** component to use `templateUrl: './app.tshtml'`
 
 ## Development
