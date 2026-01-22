@@ -1,5 +1,11 @@
 # tshtml
 
+## 1.4.5
+
+### Patch Changes
+
+- 7d52558: Restored `tsconfig-paths` auto-registration for backward compatibility with applications using path aliases (e.g., `@shared/...`). This was inadvertently removed in v1.4.0.
+
 ## 1.4.4
 
 ### Patch Changes
