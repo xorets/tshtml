@@ -1,5 +1,11 @@
 # tshtml
 
+## 1.4.4
+
+### Patch Changes
+
+- dde6c24: Documentation update
+
 ## 1.4.3
 
 ### Patch Changes

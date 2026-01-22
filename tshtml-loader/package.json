@@ -1,6 +1,6 @@
 {
   "name": "tshtml-loader",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "Webpack loader for tshtml template files",
   "repository": {
     "type": "git",
@@ -47,7 +47,7 @@
   "dependencies": {
     "lodash": "^4.17.21",
     "ts-node": "^10.9.2",
-    "tshtml": "^1.4.3",
+    "tshtml": "^1.4.4",
     "typescript": "^5.9.3"
   },
   "overrides": {
