@@ -1,0 +1,6 @@
+import { tag } from "tshtml";
+
+export default tag("div", 
+    tag("h1", "Welcome"),
+    tag("p", "This is a test template")
+);

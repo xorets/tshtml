@@ -12,7 +12,9 @@
     "dist/**/*.js",
     "dist/**/*.d.ts"
   ],
-  "bin": "./dist/export-template.js",
+  "bin": {
+    "tshtml-to-html": "./dist/export-template.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -31,6 +33,8 @@
     "pretest": "cd ../tshtml && npm run build --if-present",
     "test": "tsx ./test/jasmine.js",
     "coverage": "nyc tsx ./test/jasmine.js",
+    "test-cli:setup": "npm link && cd test-cli && npm install && npm link tshtml-loader",
+    "test-cli": "cd test-cli && npm test",
     "prepublishOnly": "npm run test && npm run build"
   },
   "author": "LOGEX Group",
@@ -47,6 +51,7 @@
   "dependencies": {
     "lodash": "^4.17.21",
     "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "tshtml": "^1.4.4",
     "typescript": "^5.9.3"
   },

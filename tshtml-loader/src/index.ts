@@ -1,7 +1,8 @@
 import { Dictionary, filter, isArray, isString, keys } from "lodash";
 import { register, Service } from "ts-node";
-import { statSync } from "fs";
-import { dirname } from "path";
+import { register as registerPaths } from "tsconfig-paths";
+import { statSync, existsSync } from "fs";
+import { dirname, join } from "path";
 import { Script } from "vm";
 import * as webpack from "webpack";
 import { isTag, tagToString } from "tshtml";
@@ -80,6 +81,15 @@ export function executeTemplate(code: string, fileName: string) {
     module.paths = (Module as any)._nodeModulePaths(dirName);
 
     const req = createRequireService(fileName);
+    
+    // Register .tshtml extension handler so imports work
+    if (!req.extensions['.tshtml']) {
+        req.extensions['.tshtml'] = (module: any, filename: string) => {
+            const content = require('fs').readFileSync(filename, 'utf-8');
+            const result = executeTemplate(content, filename);
+            module.exports = result.exports;
+        };
+    }
 
     const sandbox = {
         __filename: fileName,
@@ -112,18 +122,65 @@ export function templateToString(builder: any): string {
         return builder;
 
     } else if (typeof (builder) == "function") {
-        return (new builder()).toString();
+        const instance = new builder();
+        return templateToString(instance.toString());
 
     } else if (isArray(builder) || isTag(builder)) {
         return tagToString(builder);
 
     } else {
-        return builder.toString();
+        // Call toString() and recursively process the result
+        return templateToString(builder.toString());
     }
 }
 
 
 let compilerService: Service;
+let pathsRegistered = false;
+
+/**
+ * Find tsconfig.json by walking up from the given directory.
+ * @param startDir Directory to start searching from
+ */
+function findTsConfig(startDir: string): string | null {
+    let dir = startDir;
+    while (dir) {
+        const candidate = join(dir, "tsconfig.json");
+        if (existsSync(candidate)) {
+            return candidate;
+        }
+        const parent = dirname(dir);
+        if (parent === dir) break;
+        dir = parent;
+    }
+    return null;
+}
+
+/**
+ * Register tsconfig-paths to enable path alias resolution (e.g., @shared/...).
+ * @param fileName Template file path used to locate tsconfig.json
+ */
+function ensurePathsRegistered(fileName: string) {
+    if (pathsRegistered) return;
+    pathsRegistered = true;
+
+    const tsConfigPath = findTsConfig(dirname(fileName));
+    if (tsConfigPath) {
+        try {
+            const tsConfig = require(tsConfigPath);
+            const baseUrl = tsConfig.compilerOptions?.baseUrl;
+            const paths = tsConfig.compilerOptions?.paths;
+            if (baseUrl || paths) {
+                registerPaths({
+                    baseUrl: baseUrl ? join(dirname(tsConfigPath), baseUrl) : dirname(tsConfigPath),
+                    paths: paths || {},
+                });
+            }
+        } catch {
+            // Ignore errors reading tsconfig
+        }
+    }
+}
 
 /***
  * Compiles given TypeScript code
@@ -137,6 +194,9 @@ let compilerService: Service;
  */
 function compileCode(code: string, fileName: string) {
     const tsFileName = `${fileName}.ts`;
+
+    // Register path aliases before compilation
+    ensurePathsRegistered(fileName);
 
     if (compilerService == null) {
         compilerService = register({

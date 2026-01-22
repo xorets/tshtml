@@ -1,0 +1,1 @@
+export default "<p>Template with entities &lt; &gt; &amp;</p>";

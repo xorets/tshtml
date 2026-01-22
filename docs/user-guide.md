@@ -8,6 +8,7 @@ In Angular projects, `.tshtml` files are executed at **build time** to produce a
 - Templates are written as TypeScript modules and executed during the webpack build process
 - The output becomes the template string used by your Angular components
 - Ships with a webpack loader (`tshtml-loader`) that turns `.tshtml` files into HTML
+- Includes a small CLI (`tshtml-to-html`) that can compile `.tshtml` to `.html` for debugging or non-webpack workflows
 - Provides a small runtime API (`tag`, `html`, `cssClass`, `expr`, etc.) for programmatic template generation
 
 ### Build-time vs runtime: the important mental model
@@ -161,10 +162,27 @@ const html = tagToString(tag("div", { class: "box" }, "Content"));
 ```
 
 ## CLI helper
-Compile a single `.tshtml` to `.html`:
+The `tshtml-loader` package ships a small CLI called `tshtml-to-html` that executes one or more `.tshtml` files and writes the resulting HTML.
+
+Compile a single `.tshtml` next to the source file:
 ```bash
-npx tshtml-loader-export-template ./path/to/file.tshtml
+npx tshtml-to-html ./path/to/file.tshtml
 ```
+
+Print the rendered HTML to stdout:
+```bash
+npx tshtml-to-html ./path/to/file.tshtml --stdout
+```
+
+Compile multiple files in one command:
+```bash
+npx tshtml-to-html file1.tshtml file2.tshtml subdir/template.tshtml
+```
+
+Notes:
+- Only `.tshtml` inputs are accepted.
+- `--stdout` only works for a single input file.
+- Output files are written as `inputName.html` alongside each input.
 
 In Angular projects, you typically don’t need this CLI: Angular consumes the compiled template string produced by the webpack loader.
 

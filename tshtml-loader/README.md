@@ -57,6 +57,21 @@ export class HelloComponent {}
 export default `<h1>Hello from tshtml!</h1>`;
 ```
 
+## CLI: `tshtml-to-html`
+
+`tshtml-loader` also ships a small CLI to compile `.tshtml` files to `.html` on disk (or stdout). This is useful for debugging templates or for non-webpack workflows.
+
+```bash
+# Writes ./hello.html
+npx tshtml-to-html hello.tshtml
+
+# Prints to stdout
+npx tshtml-to-html hello.tshtml --stdout
+
+# Compiles multiple files
+npx tshtml-to-html hello.tshtml entities.tshtml
+```
+
 ## Documentation
 
 📖 **[Complete Setup Guide & Documentation on GitHub](https://github.com/xorets/tshtml)**

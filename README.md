@@ -5,6 +5,8 @@
 npm i tshtml tshtml-loader
 ```
 
+`tshtml-loader` also provides a CLI (`tshtml-to-html`) that can compile `.tshtml` files to `.html` (handy for debugging or non-webpack usage).
+
 ## Documentation
 - **[Angular 21 Integration Guide](docs/angular-21-integration.md)** — Step-by-step guide to add tshtml to an Angular 21 project
 - **[User Guide](docs/user-guide.md)** — Template authoring, API reference, and examples  

@@ -1,0 +1,8 @@
+import { html } from "tshtml";
+
+export default html`
+    <div>
+        <h1>Nested Template</h1>
+        <p>This uses nested tag calls</p>
+    </div>
+`;
