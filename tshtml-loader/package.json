@@ -49,7 +49,7 @@
     "tsx": "^4.21.0"
   },
   "dependencies": {
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "tshtml": "^1.4.5",
