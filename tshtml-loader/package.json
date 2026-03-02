@@ -45,7 +45,7 @@
     "@types/node": "25.0.9",
     "@types/webpack": "5.28.5",
     "jasmine": "6.0.0",
-    "nyc": "^17.1.0",
+    "nyc": "^18.0.0",
     "tsx": "^4.21.0"
   },
   "dependencies": {
