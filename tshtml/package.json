@@ -41,7 +41,7 @@
     "jasmine": "6.0.0",
     "nyc": "^17.1.0",
     "tsx": "^4.21.0",
-    "typedoc": "0.28.16"
+    "typedoc": "0.28.18"
   },
   "dependencies": {
     "htmlparser2": "^10.1.0",
